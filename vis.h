@@ -46,9 +46,9 @@ private:
 	void processInput(float delta);
 
 	// marching cubes
-	//int raster_dim[3] = { 96, 256, 96 };
-	int raster_dim[3] = { 96, 96, 96 };
-	int count_voxel = raster_dim[0] * raster_dim[1] * raster_dim[2];
+	//glm::vec3 buffer_dim = glm::vec3(96, 256, 96);
+	glm::vec3 buffer_dim = glm::vec3(96, 96, 96);
+	int count_voxel = (int)(buffer_dim.x * buffer_dim.y * buffer_dim.z);
 	float yOffset = 0;
 
 public:

@@ -154,8 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
-    <ClInclude Include="FrameBuffer3D.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="frameBuffer3D.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="vis.h" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 #include "camera.h"
-#include "FrameBuffer3D.h"
-#include "Mesh.h"
+#include "frameBuffer3D.h"
+#include "mesh.h"
 #include "shader.h"
 #include "vis.h"
 
@@ -9,17 +9,19 @@
 
 #define DEBUG // used to draw debug triangle, increase point size, ...
 
-const int WIDTH = 1024, HEIGHT = 800; // screen dimensions
-
 // ----------------------------------------------------------------------------------------
 // TODO:
 // - use vec3 for dimensions
-// - set camera position
-// - integrate window size to class
 // ----------------------------------------------------------------------------------------
 
-void renderTestTriangle (Shader *shader)
+void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 {
+	shader->use();
+	shader->setMat4("projection", projection);
+	shader->setMat4("view", view);
+	shader->setMat4("model", model);
+	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+
 	float vertices[] =
 	{
 		0, 0, -5,
@@ -37,7 +39,6 @@ void renderTestTriangle (Shader *shader)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	// unbind the VAO so other VAO calls won't accidentally modify this VAO
@@ -67,34 +68,30 @@ int Vis::init ()
 	}
 
 	// load and compile the vertex and fragment shaders
-	m_density = new Shader("density.vs", "density.fs");
+	m_density = new Shader("density");
 	m_density->use();
-	m_density->setFloat("screenWidth", raster_dim[0]);
-	m_density->setFloat("screenHeight", raster_dim[1]);
-	m_density->setFloat("bufferHeight", raster_dim[2]);
+	m_density->setFloat("bufferHeight", buffer_dim.y);
 
-	m_marchingCubes = new Shader("marchingCubes.vs", "marchingCubes.fs", "marchingCubes.gs");
+	m_marchingCubes = new Shader("marchingCubes");
 	m_marchingCubes->use();
-	m_marchingCubes->setFloat("bufferwidth", raster_dim[0]);
-	m_marchingCubes->setFloat("bufferheight", raster_dim[1]);
-	m_marchingCubes->setFloat("bufferlength", raster_dim[2]);
+	m_marchingCubes->setVec3("stepDimension", glm::vec3(1/buffer_dim.x, 1/buffer_dim.y, 1/buffer_dim.z));
 
-	m_shader = new Shader("simpleShader.vs", "simpleShader.fs");
+	m_shader = new Shader("simpleShader");
 
 	// init camera to be able to move around the scene
 	m_cam = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
-	m_frameBuffer = new FrameBuffer3D(raster_dim); // holds 3D texture to generate density
+	m_frameBuffer = new FrameBuffer3D(buffer_dim); // holds 3D texture to generate density
 
 	// setup the initial mesh for the rocks
 	std::vector<float> vectorArrayRocksCoords;
-	for (int i = 0; i < raster_dim[0]; i++)
+	for (float i = 0; i < buffer_dim.x; i++)
 	{
-		for (int j = 0; j < raster_dim[1]; j++)
+		for (float j = 0; j < buffer_dim.y; j++)
 		{
-			for (int k = 0; k < raster_dim[2]; k++)
+			for (float k = 0; k < buffer_dim.z; k++)
 			{
 				vectorArrayRocksCoords.push_back(i);
 				vectorArrayRocksCoords.push_back(j);
@@ -115,23 +112,11 @@ int Vis::init ()
 	};
 	m_meshTriangle = new Mesh(quadSliceCorners, 6);
 
-	// create the viewport
-	//glViewport(0, 0, WIDTH, HEIGHT);
-
-	// unbind the VAO so other VAO calls won't accidentally modify this VAO
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0);
-
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 
 	// set wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
-
-	/*#ifdef DEBUG
-		glPointSize(5.0);
-	#endif*/
 
 	return 0;
 }
@@ -210,14 +195,14 @@ void Vis::display ()
 		m_frameBuffer->use();
 		m_density->use();
 		m_density->setFloat("yOffset", yOffset);
-		for (int i = 0; i < raster_dim[1]; i++)
+		for (int i = 0; i < buffer_dim.y; i++)
 		{
 			// Create one layer
 			m_density->setInt("layer", i);
 			// Each layer is made up of a rectangle of vertices
 			m_meshTriangle->draw(GL_TRIANGLES);
 
-			m_frameBuffer->setLayer(i + 1);
+			m_frameBuffer->setLayer(i);
 		}
 
 		// render 3D texture to screen
@@ -234,23 +219,15 @@ void Vis::display ()
 		glm::mat4 model = glm::mat4(1.0f);
 
 		#ifdef DEBUG
-			m_shader->use();
-			m_shader->setMat4("projection", projection);
-			m_shader->setMat4("view", view);
-			m_shader->setMat4("model", model);
-			renderTestTriangle(m_shader);
+			renderTestTriangle(m_shader, projection, view, model);
 		#endif
 
 		m_marchingCubes->use();
 		m_marchingCubes->setMat4("projection", projection);
 		m_marchingCubes->setMat4("view", view);
-		m_marchingCubes->setMat4("model", model);
+		m_marchingCubes->setMat4("model", glm::rotate(model, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
 		m_meshRocks->draw(GL_POINTS);
-		//std::cout << "paint voxel: " << count_voxel << " from texture: " << m_frameBuffer->getTexture() << std::endl;
-		//glActiveTexture(GL_TEXTURE0 + m_frameBuffer->getTexture());
-		//glBindTexture(GL_TEXTURE_3D, m_frameBuffer->getTexture());
-		//glDrawArrays(GL_POINTS, 0, count_voxel);
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();

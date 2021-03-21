@@ -1,4 +1,3 @@
-//#version 330
 #version 430
 
 layout (points) in;
@@ -10,6 +9,7 @@ uniform mat4 projection;
 
 in vec3 TexCoords[];
 in int varIndex[];
+
 out vec3 TexCoordsG;
 
 vec3 vectors[13] =

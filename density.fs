@@ -3,11 +3,10 @@
 
 uniform int layer;
 uniform float yOffset;
-uniform float screenWidth, screenHeight;
 uniform float bufferHeight;
 
 in vec2 TexCoords;
-in vec3 fPos;
+//in vec3 fPos;
 
 out vec4 FragColor;
 

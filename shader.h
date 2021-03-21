@@ -4,7 +4,6 @@
 #define SHADER_H
 
 #include <glad/glad.h>
-//#include <glew/include/GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <fstream>
@@ -17,7 +16,29 @@ public:
     unsigned int ID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
+    Shader (const char* name)
+    {
+        std::string base = name;
+        try
+        {
+            std::ifstream gShaderFile;
+            gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+            gShaderFile.open(base + ".gs");
+            gShaderFile.close();
+            init((base + ".vs").c_str(), (base + ".fs").c_str(), (base + ".gs").c_str());
+        }
+        catch (std::ifstream::failure) // no gs provided or available
+        {
+            init((base + ".vs").c_str(), (base + ".fs").c_str());
+        }
+    }
+
+    Shader (const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
+    {
+        init(vertexPath, fragmentPath, geometryPath);
+    }
+
+    void init(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
     {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
