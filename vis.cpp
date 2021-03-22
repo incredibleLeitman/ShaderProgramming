@@ -9,11 +9,6 @@
 
 #define DEBUG // used to draw debug triangle, increase point size, ...
 
-// ----------------------------------------------------------------------------------------
-// TODO:
-// - use vec3 for dimensions
-// ----------------------------------------------------------------------------------------
-
 void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 {
 	shader->use();
