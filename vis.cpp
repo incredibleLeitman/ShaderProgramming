@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include "shader.h"
 #include "textureLoader.h"
+#include "textRenderer.h"
 #include "vis.h"
 
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
@@ -138,6 +139,9 @@ void renderQuad()
 Vis::Vis ()
 {
 	init();
+
+	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
+	m_textRenderer->Load("fonts/ocraext.ttf", 48);
 }
 
 int Vis::init ()
@@ -214,6 +218,10 @@ int Vis::init ()
 
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND); // needed for TextRenderer
+	//glEnable(GL_MULTISAMPLE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// set wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -224,14 +232,23 @@ int Vis::init ()
 	return 0;
 }
 
+void drawErrors()
+{
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR)
+	{
+		std::cerr << err << std::endl;
+	}
+}
+
 int Vis::createWindow ()
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // 4
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 6
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Set all the required options for GLFW
-	m_window = glfwCreateWindow(WIDTH, HEIGHT, "", NULL, NULL);
+	m_window = glfwCreateWindow(WIDTH, HEIGHT, "SPG", NULL, NULL);
 	if (!m_window)
 	{
 		glfwTerminate();
@@ -291,6 +308,10 @@ void Vis::display ()
 		float deltaTime = currentFrame - m_lastFrame;
 		m_lastFrame = currentFrame;
 
+		#ifdef DEBUG
+			drawErrors();
+		#endif
+
 		processInput(deltaTime);
 
 		// generate terrain by rendering into 3D texture
@@ -309,7 +330,6 @@ void Vis::display ()
 		// render 3D texture to screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, WIDTH, HEIGHT);
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// pass projection matrix and camera/view transform to shader
@@ -347,6 +367,18 @@ void Vis::display ()
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, m_heightMap);
 		renderQuad();
+
+		/* 
+		// TODO: assure that GL_BLEND is active and polygon mode is set to full
+		bool activateBlend = !glIsEnabled(GL_BLEND);
+		if (activateBlend) glEnable(GL_BLEND);
+		// render Text
+		if (activateBlend) glDisable(GL_BLEND);
+		*/
+
+		m_textRenderer->RenderText("TEST TEXT", WIDTH / 2.0f, HEIGHT / 2.0f, 0.5f, glm::vec3(1.0f));
+
+		// -----------------------------------------------------------------------------------------------------------
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();

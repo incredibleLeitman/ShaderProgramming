@@ -7,6 +7,7 @@ class Shader;
 class Camera;
 class FrameBuffer3D;
 class Mesh;
+class TextRenderer;
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -16,6 +17,9 @@ class Vis
 private:
 	GLFWwindow *m_window;
 	Camera *m_cam;
+
+	// text renderer
+	TextRenderer *m_textRenderer;
 
 	// shaders
 	Shader *m_density;

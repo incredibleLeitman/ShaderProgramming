@@ -14,8 +14,7 @@ class Shader
 {
 public:
     unsigned int ID;
-    // constructor generates the shader on the fly
-    // ------------------------------------------------------------------------
+
     Shader (const char* name)
     {
         std::string base = name;
@@ -38,7 +37,7 @@ public:
         init(vertexPath, fragmentPath, geometryPath);
     }
 
-    void init(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
+    void init (const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
     {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
