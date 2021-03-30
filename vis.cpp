@@ -4,8 +4,11 @@
 #include "shader.h"
 #include "vis.h"
 
+#include "textureLoader.h"
+
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
 #include <GLFW/glfw3.h>
+
 
 #define DEBUG // used to draw debug triangle, increase point size, ...
 
@@ -62,6 +65,11 @@ int Vis::init ()
 		return exitWithError("Failed to initialize GLAD");
 	}
 
+	// load textures
+	m_diffuseMap = loadTexture("bricks.jpg"); // FileSystem::getPath("filepath").c_str()
+	m_normalMap = loadTexture("bricks_normal.jpg");
+	m_heightMap = loadTexture("bricks_disp.jpg");
+
 	// load and compile the vertex and fragment shaders
 	m_density = new Shader("density");
 	m_density->use();
@@ -70,6 +78,9 @@ int Vis::init ()
 	m_marchingCubes = new Shader("marchingCubes");
 	m_marchingCubes->use();
 	m_marchingCubes->setVec3("stepDimension", glm::vec3(1/buffer_dim.x, 1/buffer_dim.y, 1/buffer_dim.z));
+
+	m_displacement = new Shader("displacement");
+	m_displacement->use();
 
 	m_shader = new Shader("simpleShader");
 

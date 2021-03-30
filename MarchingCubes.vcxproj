@@ -157,11 +157,14 @@
     <ClInclude Include="frameBuffer3D.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="textureLoader.h" />
     <ClInclude Include="vis.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="density.fs" />
     <None Include="density.vs" />
+    <None Include="displacement.fs" />
+    <None Include="displacement.vs" />
     <None Include="simpleShader.fs" />
     <None Include="marchingCubes.fs" />
     <None Include="marchingCubes.gs" />

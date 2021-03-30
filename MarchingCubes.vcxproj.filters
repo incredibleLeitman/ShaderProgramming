@@ -16,6 +16,9 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{e2d2cd15-2371-4e78-abf7-5eb10ceb23a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{ad0ebfd7-3536-4d4e-ace5-ca00a26bd315}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,6 +47,9 @@
     <ClInclude Include="mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="textureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="density.fs">
@@ -65,6 +71,12 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="marchingCubes.vs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="displacement.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="displacement.vs">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

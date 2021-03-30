@@ -20,6 +20,7 @@ private:
 	// shaders
 	Shader *m_density;
 	Shader *m_marchingCubes;
+	Shader* m_displacement;
 	Shader *m_shader;
 
 	bool m_showLines = false;				// toogle between polygon fill and wireframe lines using key 'P'
@@ -34,6 +35,9 @@ private:
 	FrameBuffer3D *m_frameBuffer;
 	Mesh *m_meshTriangle;
 	Mesh* m_meshRocks;
+
+	// textures
+	unsigned int m_diffuseMap, m_normalMap, m_heightMap;
 
 	int exitWithError (std::string code);
 	int init ();

@@ -1,8 +1,8 @@
 # vs project files
-*.vs
-*Debug
-*Release
-*enc_temp_folder
+.vs
+Debug
+Release
+enc_temp_folder
 
 # dependencies
 *libs
@@ -11,4 +11,3 @@ glad.c
 
 # gcc build files
 *.o
-kdtree
