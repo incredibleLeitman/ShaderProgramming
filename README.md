@@ -7,13 +7,13 @@ assignments for SPG (shader programming) @FHTechnikumWien
 | key        | action |
 | :------------- | :----- |
 | p      | toggle wireframe mode |
-| +, -      | change offset for 3D texture and generate new geometry |
+| r      | rotate displacement tile |
+| Cursor UP, DOWN      | change offset for 3D texture and generate new geometry |
 | W, A, S, D      | controls to move the camera, look around with mouse |
 
 ## MarchingCubes
 
-![](assets/kumamon-runner.gif)
-![Screenshot](application.gif "marchingcubes")
+![Screenshot](marchingCubes.gif "marchingcubes")
 
 ### references
 
@@ -22,6 +22,8 @@ assignments for SPG (shader programming) @FHTechnikumWien
 - [Polygonising a scalar field by Paul Bourke](http://paulbourke.net/geometry/polygonise/)
 
 ## Pixel Shader Displacement Mapping
+
+![displacement tile](displacementTile.png "displacement tile")
 
 ### references
 

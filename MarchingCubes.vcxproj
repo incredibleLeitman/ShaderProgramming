@@ -171,6 +171,11 @@
     <None Include="marchingCubes.vs" />
     <None Include="simpleShader.vs" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="bricks.jpg" />
+    <Image Include="bricks_disp.jpg" />
+    <Image Include="bricks_normal.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

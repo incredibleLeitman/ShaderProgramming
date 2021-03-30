@@ -80,4 +80,15 @@
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="bricks.jpg">
+      <Filter>Textures</Filter>
+    </Image>
+    <Image Include="bricks_disp.jpg">
+      <Filter>Textures</Filter>
+    </Image>
+    <Image Include="bricks_normal.jpg">
+      <Filter>Textures</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
