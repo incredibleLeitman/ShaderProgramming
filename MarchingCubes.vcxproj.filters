@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{e2d2cd15-2371-4e78-abf7-5eb10ceb23a4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Textures">
+    <Filter Include="Resource Files\Textures">
       <UniqueIdentifier>{ad0ebfd7-3536-4d4e-ace5-ca00a26bd315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{e2d2cd15-2371-4e78-abf7-5eb10ceb23a4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,43 +52,43 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="density.fs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="density.vs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="simpleShader.vs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="simpleShader.fs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="marchingCubes.fs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="marchingCubes.gs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="marchingCubes.vs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="displacement.fs">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="displacement.vs">
-      <Filter>Shader</Filter>
-    </None>
+    <Image Include="textures\bricks.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="textures\bricks_disp.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="textures\bricks_normal.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bricks.jpg">
-      <Filter>Textures</Filter>
-    </Image>
-    <Image Include="bricks_disp.jpg">
-      <Filter>Textures</Filter>
-    </Image>
-    <Image Include="bricks_normal.jpg">
-      <Filter>Textures</Filter>
-    </Image>
+    <None Include="shaders\density.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\density.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\displacement.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\displacement.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\marchingCubes.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\marchingCubes.gs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\marchingCubes.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\simpleShader.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\simpleShader.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

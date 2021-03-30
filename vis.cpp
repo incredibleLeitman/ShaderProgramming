@@ -157,27 +157,27 @@ int Vis::init ()
 	}
 
 	// load textures
-	m_diffuseMap = loadTexture("bricks.jpg"); // FileSystem::getPath("filepath").c_str()
-	m_normalMap = loadTexture("bricks_normal.jpg");
-	m_heightMap = loadTexture("bricks_disp.jpg");
+	m_diffuseMap = loadTexture("textures/bricks.jpg"); // FileSystem::getPath("filepath").c_str()
+	m_normalMap = loadTexture("textures/bricks_normal.jpg");
+	m_heightMap = loadTexture("textures/bricks_disp.jpg");
 
 	// load and compile shaders
-	m_density = new Shader("density");
+	m_density = new Shader("shaders/density");
 	m_density->use();
 	m_density->setFloat("bufferHeight", m_buffer_dim.y);
 
-	m_marchingCubes = new Shader("marchingCubes");
+	m_marchingCubes = new Shader("shaders/marchingCubes");
 	m_marchingCubes->use();
 	m_marchingCubes->setVec3("stepDimension", glm::vec3(1/m_buffer_dim.x, 1/m_buffer_dim.y, 1/m_buffer_dim.z));
 
-	m_displacement = new Shader("displacement");
+	m_displacement = new Shader("shaders/displacement");
 	m_displacement->use();
 	m_displacement->setInt("diffuseMap", 0);
 	m_displacement->setInt("normalMap", 1);
 	m_displacement->setInt("depthMap", 2);
 	m_displacement->setVec3("lightPos", m_lightPos);
 
-	m_shader = new Shader("simpleShader");
+	m_shader = new Shader("shaders/simpleShader");
 
 	// init camera to be able to move around the scene
 	m_cam = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -339,7 +339,7 @@ void Vis::display ()
 		m_displacement->setVec3("viewPos", m_cam->Position);
 		m_displacement->setFloat("heightScale", m_heightScale);			// adjust with Q, E
 		m_displacement->setInt("normalSteps", m_normalSteps);			// adjust with Page up, down
-		m_displacement->setInt("refinementSteps", m_refinementSteps);	// 
+		m_displacement->setInt("refinementSteps", m_refinementSteps);	// adjust with +, -
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
