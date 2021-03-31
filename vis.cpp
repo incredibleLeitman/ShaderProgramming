@@ -161,9 +161,9 @@ int Vis::init ()
 	}
 
 	// load textures
-	m_diffuseMap = loadTexture("textures/bricks.jpg"); // FileSystem::getPath("filepath").c_str()
-	m_normalMap = loadTexture("textures/bricks_normal.jpg");
-	m_heightMap = loadTexture("textures/bricks_disp.jpg");
+	m_texturesBrick = loadTextureBatch("textures/bricks"); // loads bricks.jpg, bricks_normal.jpg and bricks_disp.jpg
+	m_texturesWood = loadTextureBatch("textures/wood");
+	m_texturesCurrent = &m_texturesBrick;
 
 	// load and compile shaders
 	m_density = new Shader("shaders/density");
@@ -176,9 +176,9 @@ int Vis::init ()
 
 	m_displacement = new Shader("shaders/displacement");
 	m_displacement->use();
-	m_displacement->setInt("diffuseMap", 0);
-	m_displacement->setInt("normalMap", 1);
-	m_displacement->setInt("depthMap", 2);
+	m_displacement->setInt("diffuseMap", (*m_texturesCurrent)[0] - 1);
+	m_displacement->setInt("normalMap", (*m_texturesCurrent)[1] - 1);
+	m_displacement->setInt("depthMap", (*m_texturesCurrent)[2] - 1);
 	m_displacement->setVec3("lightPos", m_lightPos);
 
 	m_shader = new Shader("shaders/simpleShader");
@@ -360,12 +360,11 @@ void Vis::display ()
 		m_displacement->setFloat("heightScale", m_heightScale);			// adjust with Q, E
 		m_displacement->setInt("normalSteps", m_normalSteps);			// adjust with Page up, down
 		m_displacement->setInt("refinementSteps", m_refinementSteps);	// adjust with +, -
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_normalMap);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_heightMap);
+		for (int texture : *m_texturesCurrent)
+		{
+			glActiveTexture(GL_TEXTURE0 + texture - 1);
+			glBindTexture(GL_TEXTURE_2D, texture);
+		}
 		renderQuad();
 
 		/* 
@@ -437,6 +436,16 @@ void Vis::key_callback (GLFWwindow* window, int key, int scancode, int action, i
 		{
 			std::cout << "rotation " << ((m_rotate ^= true) ? "enabled" : "disabled") << std::endl;
 		}
+		else if (key == GLFW_KEY_KP_1 || key == GLFW_KEY_KP_2) // swaps current textures for displacement tile
+		{
+			m_texturesCurrent = (key == GLFW_KEY_KP_1) ? &m_texturesBrick : &m_texturesWood;
+
+			m_displacement->use();
+			m_displacement->setInt("diffuseMap", (*m_texturesCurrent)[0] - 1);
+			m_displacement->setInt("normalMap", (*m_texturesCurrent)[1] - 1);
+			m_displacement->setInt("depthMap", (*m_texturesCurrent)[2] - 1);
+		}
+		
 	}
 }
 

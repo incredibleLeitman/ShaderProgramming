@@ -25,7 +25,8 @@ void main ()
 {
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
     vs_out.TexCoords = aTexCoords;
-    
+
+    // TODO: calculate tangens-bitangens matrix if not provided
     vec3 T = normalize(mat3(model) * aTangent);
     vec3 B = normalize(mat3(model) * aBitangent);
     vec3 N = normalize(mat3(model) * aNormal);

@@ -3,12 +3,14 @@
 #define VIS_H
 
 struct GLFWwindow;
+
 class Shader;
 class Camera;
 class FrameBuffer3D;
 class Mesh;
 class TextRenderer;
 
+#include <array>
 #include <glm/glm.hpp>
 #include <iostream>
 
@@ -45,7 +47,9 @@ private:
 	const glm::vec3 m_lightPos = glm::vec3(0.5f, 1.0f, 0.3f);
 
 	// textures
-	unsigned int m_diffuseMap, m_normalMap, m_heightMap;
+	std::array<int, 3> m_texturesBrick;
+	std::array<int, 3> m_texturesWood;
+	std::array<int, 3> *m_texturesCurrent;
 
 	int exitWithError (std::string code);
 	int init ();
