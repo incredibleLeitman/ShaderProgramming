@@ -127,7 +127,7 @@ public:
     }
 
     // renders a string of text using the precompiled list of characters
-    void RenderText (std::string text, float x, float y, float scale, glm::vec3 color = glm::vec3(1.0f))
+    void RenderText (const std::string text, float x, float y, float scale, glm::vec3 color = glm::vec3(1.0f))
     {
         // activate corresponding render state
         TextShader->use();

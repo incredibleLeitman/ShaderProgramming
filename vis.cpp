@@ -9,7 +9,7 @@
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
 #include <GLFW/glfw3.h>
 
-#define DEBUG // used to draw debug triangle, increase point size, ...
+#define DEBUG		// used to draw debug triangle, increase point size, ...
 
 unsigned int VAOTriangle = 0, VBOTriangle;
 void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
@@ -141,7 +141,7 @@ Vis::Vis ()
 	init();
 
 	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
-	m_textRenderer->Load("fonts/ocraext.ttf", 48);
+	m_textRenderer->Load("fonts/ocraext.ttf", 36);
 }
 
 int Vis::init ()
@@ -375,7 +375,13 @@ void Vis::display ()
 		if (activateBlend) glDisable(GL_BLEND);
 		*/
 
-		m_textRenderer->RenderText("TEST TEXT", WIDTH / 2.0f, HEIGHT / 2.0f, 0.5f, glm::vec3(1.0f));
+		float yOff = .0f;
+		float dY = 20.0f;
+		m_textRenderer->RenderText("W, A, S, D        move", .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + std::to_string(m_yOffset), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Q, E              height scale: " + std::to_string(m_heightScale), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
 
 		// -----------------------------------------------------------------------------------------------------------
 
@@ -465,43 +471,19 @@ void Vis::processInput(float delta)
 	if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
 		m_cam->ProcessKeyboard(RIGHT, delta);
 	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
 		m_yOffset += 0.1f;
-		std::cout << "y offset: " << m_yOffset << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS)
-	{
 		m_yOffset -= 0.1f;
-		std::cout << "y offset: " << m_yOffset << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_Q) == GLFW_PRESS)
-	{
 		m_heightScale = std::max(m_heightScale - 0.005f, -1.0f);
-		std::cout << "height scale: " << m_heightScale << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_E) == GLFW_PRESS)
-	{
 		m_heightScale = std::min(m_heightScale + 0.005f, 1.0f);
-		std::cout << "height scale: " << m_heightScale << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
-	{
 		++m_normalSteps;
-		std::cout << "normal steps: " << m_normalSteps << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
-	{
 		m_normalSteps = std::max(--m_normalSteps, 1);
-		std::cout << "normal steps: " << m_normalSteps << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
-	{
 		++m_refinementSteps;
-		std::cout << "refinement steps: " << m_refinementSteps << std::endl;
-	}
 	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
-	{
 		m_refinementSteps = std::max(--m_refinementSteps, 1);
-		std::cout << "refinement steps: " << m_refinementSteps << std::endl;
-	}
 }

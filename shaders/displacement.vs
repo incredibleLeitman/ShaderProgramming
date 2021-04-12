@@ -27,6 +27,7 @@ void main ()
     vs_out.TexCoords = aTexCoords;
 
     // TODO: calculate tangens-bitangens matrix if not provided
+    // https://www.youtube.com/watch?v=4FaWLgsctqY
     vec3 T = normalize(mat3(model) * aTangent);
     vec3 B = normalize(mat3(model) * aBitangent);
     vec3 N = normalize(mat3(model) * aNormal);
