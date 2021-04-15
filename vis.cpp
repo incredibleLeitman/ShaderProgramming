@@ -4,6 +4,7 @@
 #include "shader.h"
 #include "textureLoader.h"
 #include "textRenderer.h"
+#include "utility.h"
 #include "vis.h"
 
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
@@ -232,7 +233,7 @@ int Vis::init ()
 	return 0;
 }
 
-void drawErrors()
+void drawErrors ()
 {
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR)
@@ -257,7 +258,7 @@ int Vis::createWindow ()
 
 	// Make the window's context current and set callbacks
 	glfwMakeContextCurrent(m_window);
-	glfwSetWindowPos(m_window, 250, 250);
+	glfwSetWindowPos(m_window, 250, 25);
 	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // enables mouse capture
 	// --------------------------------------------------------------------------------------------------------
 	// problem:
@@ -300,12 +301,19 @@ int Vis::createWindow ()
 
 void Vis::display ()
 {
+	float xOff = 10.0f;
+	float yOff = .0f;
+	float dY = 20.0f;
+	float currentFrame;
+	float deltaTime;
+	glm::mat4 projection, view, model;
+
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(m_window))
 	{
 		// per-frame time logic
-		float currentFrame = (float)glfwGetTime();
-		float deltaTime = currentFrame - m_lastFrame;
+		currentFrame = (float)glfwGetTime();
+		deltaTime = currentFrame - m_lastFrame;
 		m_lastFrame = currentFrame;
 
 		#ifdef DEBUG
@@ -333,9 +341,9 @@ void Vis::display ()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// pass projection matrix and camera/view transform to shader
-		glm::mat4 projection = m_cam->GetProjectionMatrix();
-		glm::mat4 view = m_cam->GetViewMatrix();
-		glm::mat4 model = glm::mat4(1.0f);
+		projection = m_cam->GetProjectionMatrix();
+		view = m_cam->GetViewMatrix();
+		model = glm::mat4(1.0f);
 
 		#ifdef DEBUG
 			renderTestTriangle(m_shader, projection, view, model);
@@ -367,21 +375,30 @@ void Vis::display ()
 		}
 		renderQuad();
 
-		/* 
-		// TODO: assure that GL_BLEND is active and polygon mode is set to full
+		// assure that GL_BLEND is active and polygon mode is set to full
+		// TODO: move this to seperate function
 		bool activateBlend = !glIsEnabled(GL_BLEND);
 		if (activateBlend) glEnable(GL_BLEND);
-		// render Text
-		if (activateBlend) glDisable(GL_BLEND);
-		*/
 
-		float yOff = .0f;
-		float dY = 20.0f;
-		m_textRenderer->RenderText("W, A, S, D        move", .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + std::to_string(m_yOffset), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Q, E              height scale: " + std::to_string(m_heightScale), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), .0f, yOff += dY, 0.5f, glm::vec3(1.0f));
+		// set wireframe mode
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		xOff = 10.0f;
+		yOff = .0f;
+		m_textRenderer->RenderText("W, A, S, D        move", xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + floatToString(m_yOffset), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Q, E              height scale: " + floatToString(m_heightScale), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+
+		xOff = WIDTH - 450.0f;
+		yOff = .0f;
+		m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+		m_textRenderer->RenderText("NUM 1, 2          texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+
+		if (activateBlend) glDisable(GL_BLEND);
+		glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
 
 		// -----------------------------------------------------------------------------------------------------------
 
@@ -393,7 +410,7 @@ void Vis::display ()
 	//return EXIT_SUCCESS;
 }
 
-int Vis::exitWithError(std::string code)
+int Vis::exitWithError (std::string code)
 {
 	std::cout << "error: " << code << std::endl;
 	return EXIT_FAILURE;

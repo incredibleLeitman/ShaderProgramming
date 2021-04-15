@@ -29,9 +29,9 @@ vec2 ParallaxMapping (vec2 texCoords, vec3 viewDir)
     // calculate the size of each layer
     float layerDepth = 1.0 / numLayers;
     // the amount to shift the texture coordinates per layer (from vector P)
-    vec2 P = viewDir.xy / viewDir.z * heightScale; 
+    vec2 P = viewDir.xy / viewDir.z * heightScale;
     vec2 deltaTexCoords = P / numLayers;
-  
+
     // normal steps
     vec2  currentTexCoords     = texCoords;
     float currentDepthMapValue = texture(depthMap, currentTexCoords).r;
@@ -53,17 +53,15 @@ vec2 ParallaxMapping (vec2 texCoords, vec3 viewDir)
     {
         // shift texture coordinates along direction of P
         currentTexCoords += deltaTexCoords;
-        
         // get depthmap value at current texture coordinates
         currentDepthMapValue = texture(depthMap, currentTexCoords).r;
-        
         // get depth of next layer
         currentLayerDepth -= layerDepth;
     }
 
     // interpolate between range for even finer refinement
     // get texture coordinates before collision (reverse operations)
-    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    vec2 prevTexCoords = currentTexCoords - deltaTexCoords;
 
     // get depth after and before collision for linear interpolation
     float afterDepth  = currentDepthMapValue - currentLayerDepth;
@@ -90,17 +88,13 @@ void main ()
     vec3 normal = texture(normalMap, texCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
 
-    // diffuse color
+    // lighting
     vec3 color = texture(diffuseMap, texCoords).rgb;
-    // ambient
     vec3 ambient = 0.1 * color;
-    // diffuse
     vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
-    float diff = max(dot(lightDir, normal), 0.0);
-    vec3 diffuse = diff * color;
-    // specular
+    vec3 diffuse = max(dot(lightDir, normal), 0.0) * color;
     vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
     vec3 specular = vec3(0.2) * spec;

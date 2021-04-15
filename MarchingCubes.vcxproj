@@ -161,6 +161,7 @@
     <ClInclude Include="shader.h" />
     <ClInclude Include="textRenderer.h" />
     <ClInclude Include="textureLoader.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="vis.h" />
   </ItemGroup>
   <ItemGroup>
