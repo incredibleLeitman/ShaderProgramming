@@ -49,7 +49,7 @@ void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, g
 }
 
 unsigned int VAOQuad = 0, VBOQuad;
-void renderQuad()
+void renderQuad ()
 {
 	if (VAOQuad == 0)
 	{
@@ -143,6 +143,34 @@ Vis::Vis ()
 
 	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
 	m_textRenderer->Load("fonts/ocraext.ttf", 36);
+}
+
+void Vis::renderText (float xOff, float yOff, float dY)
+{
+	// assure that GL_BLEND is active and polygon mode is set to full
+		// TODO: move this to seperate function
+	bool activateBlend = !glIsEnabled(GL_BLEND);
+	if (activateBlend) glEnable(GL_BLEND);
+
+	// set wireframe mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	xOff = 10.0f;
+	yOff = .0f;
+	m_textRenderer->RenderText("W, A, S, D        move", xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + floatToString(m_yOffset), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("Q, E              height scale: " + floatToString(m_heightScale), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+
+	xOff = WIDTH - 450.0f;
+	yOff = .0f;
+	m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("NUM 1, 2          texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+
+	if (activateBlend) glDisable(GL_BLEND);
+	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
 }
 
 int Vis::init ()
@@ -375,30 +403,7 @@ void Vis::display ()
 		}
 		renderQuad();
 
-		// assure that GL_BLEND is active and polygon mode is set to full
-		// TODO: move this to seperate function
-		bool activateBlend = !glIsEnabled(GL_BLEND);
-		if (activateBlend) glEnable(GL_BLEND);
-
-		// set wireframe mode
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		xOff = 10.0f;
-		yOff = .0f;
-		m_textRenderer->RenderText("W, A, S, D        move", xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + floatToString(m_yOffset), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Q, E              height scale: " + floatToString(m_heightScale), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-
-		xOff = WIDTH - 450.0f;
-		yOff = .0f;
-		m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-		m_textRenderer->RenderText("NUM 1, 2          texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-
-		if (activateBlend) glDisable(GL_BLEND);
-		glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
+		renderText(xOff, yOff, dY);
 
 		// -----------------------------------------------------------------------------------------------------------
 

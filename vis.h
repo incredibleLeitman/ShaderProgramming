@@ -72,6 +72,9 @@ private:
 	int m_normalSteps = 10;
 	int m_refinementSteps = 5;
 
+	// text rendering
+	void renderText(float xOff, float yOff, float dY);
+
 public:
 	Vis ();
 	void display();
