@@ -9,9 +9,9 @@
 #include "textRenderer.h"
 #include "utility.h"
 #include "vis.h"
+
 #ifdef DEBUG
-	//#include "glm/ext.hpp"
-	#include "glm/gtx/string_cast.hpp"
+	#include "glm/gtx/string_cast.hpp" // glm::to_string
 #endif
 
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
@@ -150,8 +150,12 @@ Vis::Vis ()
 	m_textRenderer->Load("fonts/ocraext.ttf", 36);
 }
 
-void Vis::renderText (float xOff, float yOff, float dY)
+void Vis::renderText ()
 {
+	float xOff = 10.0f;
+	float yOff = .0f;
+	float dY = 20.0f;
+
 	// assure that GL_BLEND is active and polygon mode is set to full
 		// TODO: move this to seperate function
 	bool activateBlend = !glIsEnabled(GL_BLEND);
@@ -342,9 +346,6 @@ int Vis::createWindow ()
 
 void Vis::display ()
 {
-	float xOff = 10.0f;
-	float yOff = .0f;
-	float dY = 20.0f;
 	float currentFrame;
 	float deltaTime;
 	glm::mat4 projection, view, model;
@@ -416,11 +417,11 @@ void Vis::display ()
 		}
 		renderQuad();
 
+		// particle system
 		m_particleSystem->renderParticles(deltaTime, projection, view, m_cam);
 
-		renderText(xOff, yOff, dY);
-
-		// -----------------------------------------------------------------------------------------------------------
+		// Text HUD
+		renderText();
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -462,11 +463,13 @@ void Vis::mouse_callback (GLFWwindow* window, double xpos, double ypos)
 void Vis::click_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	// shoots raycast to spawn particle emitter
-	
-	// TODO: calc depending on cam front dir
-	//glm::vec3 pos += -m_cam->Front * glm::vec3(0, 0, 10);
-	glm::vec3 pos = m_cam->Position + glm::vec3(0, 0, 10);
-	m_particleSystem->createEmitter(pos);
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		// TODO: calc depending on cam front dir
+		//glm::vec3 pos += -m_cam->Front * glm::vec3(0, 0, 10);
+		glm::vec3 pos = m_cam->Position + glm::vec3(0, 0, 10);
+		m_particleSystem->createEmitter(pos);
+	}
 }
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------

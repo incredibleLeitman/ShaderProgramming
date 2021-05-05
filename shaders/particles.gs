@@ -33,8 +33,8 @@ void main()
         for (int index = 0; index < 3; ++index)
         {
             // calculat offset so quads always faces the camera
-            vec3 offset = cameraLeft * quadVertices[quadIndices[triangle*3 + index]].x +
-                          cameraUp * quadVertices[quadIndices[triangle*3 + index]].y;
+            vec3 offset = cameraLeft*quadVertices[quadIndices[triangle*3 + index]].x +
+                          cameraUp*quadVertices[quadIndices[triangle*3 + index]].y;
             gl_Position = gl_in[0].gl_Position + gAlive[0]*vec4(gSize[0]*offset, 1.0);
             gl_Position = projection * view * model * gl_Position;
             EmitVertex();

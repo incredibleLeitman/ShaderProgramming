@@ -13,9 +13,9 @@ class Camera;
 class ParticleSystem
 {
 private:
-	struct Particle
+	struct Emitter
 	{
-		Particle (glm::vec3 position, float seed)
+		Emitter(glm::vec3 position, float seed)
 			: timeAlive(0), seed(seed), position(position)
 		{
 		}
@@ -34,14 +34,13 @@ private:
 	const glm::vec3 maxVelocity = glm::vec3( 2.5f, 5.0f, 0.0f);
 
 	unsigned int VAO, VBO;
-	std::vector<Particle> m_particles;
+	std::vector<Emitter> m_emitters;
 
-	void updateParticles (Particle& ps, float deltaTime)
+	void updateParticleEmitter (Emitter& ps, float deltaTime)
 	{
-		glm::mat4 model = glm::translate(glm::mat4(1.0), ps.position);
-		m_shader->setMat4("model", model);
+		m_shader->setMat4("model", glm::translate(glm::mat4(1.0), ps.position));
 		m_shader->setFloat("time", ps.timeAlive);
-		m_shader->setFloat("particleSystemSeed", ps.seed);
+		m_shader->setFloat("seed", ps.seed);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_POINTS, 0, maxParticles);
 		ps.timeAlive += deltaTime * updateRate;
@@ -78,8 +77,8 @@ public:
 
 	void createEmitter (glm::vec3 pos)
 	{
-		Particle part(pos, (float)glfwGetTime());
-		m_particles.push_back(part);
+		Emitter emit(pos, (float)glfwGetTime());
+		m_emitters.push_back(emit);
 	}
 
 	void renderParticles (float deltaTime, glm::mat4 projection, glm::mat4 view, Camera *cam)
@@ -90,9 +89,9 @@ public:
 		m_shader->setVec3("cameraUp", cam->Up);
 		m_shader->setVec3("cameraLeft", -cam->Right);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		for (auto& ps : m_particles)
+		for (auto& ps : m_emitters)
 		{
-			updateParticles(ps, deltaTime);
+			updateParticleEmitter(ps, deltaTime);
 		}
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
