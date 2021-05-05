@@ -1,16 +1,21 @@
+#define DEBUG		// used to draw debug triangle, increase point size, ...
+
 #include "camera.h"
 #include "frameBuffer3D.h"
 #include "mesh.h"
+#include "particleSystem.h"
 #include "shader.h"
 #include "textureLoader.h"
 #include "textRenderer.h"
 #include "utility.h"
 #include "vis.h"
+#ifdef DEBUG
+	//#include "glm/ext.hpp"
+	#include "glm/gtx/string_cast.hpp"
+#endif
 
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
 #include <GLFW/glfw3.h>
-
-#define DEBUG		// used to draw debug triangle, increase point size, ...
 
 unsigned int VAOTriangle = 0, VBOTriangle;
 void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
@@ -163,11 +168,12 @@ void Vis::renderText (float xOff, float yOff, float dY)
 	m_textRenderer->RenderText("Page Up, Down     displacement steps: " + std::to_string(m_normalSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 
-	xOff = WIDTH - 450.0f;
+	xOff = WIDTH - 460.0f;
 	yOff = .0f;
 	m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("NUM 1, 2          texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("Space, Backspace  update rate:   " + std::to_string((int)m_particleSystem->updateRate), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 
 	if (activateBlend) glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -245,6 +251,8 @@ int Vis::init ()
 	};
 	m_meshTriangle = new Mesh(quadSliceCorners, 6);
 
+	m_particleSystem = new ParticleSystem();
+
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
@@ -312,6 +320,11 @@ int Vis::createWindow ()
 	glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xpos, double ypos)
 	{
 		static_cast<Vis*>(glfwGetWindowUserPointer(window))->mouse_callback(window, xpos, ypos);
+	});
+
+	glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int action, int mods)
+	{
+		static_cast<Vis*>(glfwGetWindowUserPointer(window))->click_callback(window, button, action, mods);
 	});
 
 	glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xoffset, double yoffset)
@@ -403,6 +416,8 @@ void Vis::display ()
 		}
 		renderQuad();
 
+		m_particleSystem->renderParticles(deltaTime, projection, view, m_cam);
+
 		renderText(xOff, yOff, dY);
 
 		// -----------------------------------------------------------------------------------------------------------
@@ -442,6 +457,17 @@ void Vis::mouse_callback (GLFWwindow* window, double xpos, double ypos)
 	m_cam->ProcessMouseMovement(xoffset, yoffset);
 }
 
+// glfw: This function sets the mouse button callback of the specified window, which is called when a mouse button is pressed or released.
+// ----------------------------------------------------------------------
+void Vis::click_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	// shoots raycast to spawn particle emitter
+	
+	// TODO: calc depending on cam front dir
+	//glm::vec3 pos += -m_cam->Front * glm::vec3(0, 0, 10);
+	glm::vec3 pos = m_cam->Position + glm::vec3(0, 0, 10);
+	m_particleSystem->createEmitter(pos);
+}
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void Vis::scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
@@ -473,7 +499,14 @@ void Vis::key_callback (GLFWwindow* window, int key, int scancode, int action, i
 			m_displacement->setInt("normalMap", (*m_texturesCurrent)[1] - 1);
 			m_displacement->setInt("depthMap", (*m_texturesCurrent)[2] - 1);
 		}
-		
+		else if (key == GLFW_KEY_SPACE)
+		{
+			m_particleSystem->updateRate++;
+		}
+		else if (key == GLFW_KEY_BACKSPACE)
+		{
+			m_particleSystem->updateRate--;
+		}
 	}
 }
 

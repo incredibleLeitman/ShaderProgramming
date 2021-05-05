@@ -56,6 +56,9 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="particleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\bricks.jpg">
@@ -100,6 +103,15 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\text_2d.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\particles.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\particles.gs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\particles.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

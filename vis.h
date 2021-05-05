@@ -8,6 +8,7 @@ class Shader;
 class Camera;
 class FrameBuffer3D;
 class Mesh;
+class ParticleSystem;
 class TextRenderer;
 
 #include <array>
@@ -51,12 +52,16 @@ private:
 	std::array<int, 3> m_texturesWood;
 	std::array<int, 3> *m_texturesCurrent;
 
+	// particles
+	ParticleSystem *m_particleSystem;
+
 	int exitWithError (std::string code);
 	int init ();
 	int createWindow ();
 
 	// opengl callbacks
 	void mouse_callback (GLFWwindow* window, double xpos, double ypos);
+	void click_callback(GLFWwindow* window, int button, int action, int mods);
 	void scroll_callback (GLFWwindow* window, double xoffset, double yoffset);
 	void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods);
 	void processInput(float delta);

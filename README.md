@@ -10,9 +10,11 @@ assignments for SPG (shader programming) @FHTechnikumWien
 | r      | rotate displacement tile |
 | 1, 2      | swap textures on displacement tile |
 | Cursor UP, DOWN      | change offset for 3D texture and generate new geometry |
-| +, -      | |
-| Q, E      | |
+| +, -      | refinement steps |
+| Q, E      | height scale for displacement tile |
 | W, A, S, D      | controls to move the camera, look around with mouse |
+| space, backspace | change particle update rate |
+| mouse button | spawn a new particle emitter |
 
 ## MarchingCubes
 
@@ -34,6 +36,15 @@ assignments for SPG (shader programming) @FHTechnikumWien
 - [LearnOpenGL Parallax Mapping](https://learnopengl.com/Advanced-Lighting/Parallax-Mapping)
 - [Youtube - OpenGL Game Rendering Tutorial: How Parallax Displacement Mapping Works](https://www.youtube.com/watch?v=xvOT62L-fQI)
 - [Review of Displacement Mapping Techniques and Optimization - Ermin Hrkalovic, Mikael Lundgren](http://www.diva-portal.org/smash/get/diva2:831762/FULLTEXT01.pdf)
+
+
+## GPU Particle System
+
+![Screenshot](particles.gif "particles")
+
+### References
+- [Megabyte Softworks Particle System](https://www.mbsoftworks.sk/tutorials/opengl3/23-particle-system/)
+- OpenGL SuperBible
 
 ## Dependencies
 
