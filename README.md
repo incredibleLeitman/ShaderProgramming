@@ -56,3 +56,4 @@ assignments for SPG (shader programming) @FHTechnikumWien
 - KHR
 - stb (only stb_image.h needed)
 - freetype
+- OBJ_Loader

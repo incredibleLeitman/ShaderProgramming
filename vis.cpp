@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "frameBuffer3D.h"
 #include "mesh.h"
+#include "OBJ-Loader/OBJ_Loader.h"
 #include "particleSystem.h"
 #include "shader.h"
 #include "textureLoader.h"
@@ -204,6 +205,22 @@ int Vis::init ()
 	m_texturesWood = loadTextureBatch("textures/wood");
 	m_texturesCurrent = &m_texturesBrick;
 
+	// load models
+	objl::Loader loader;
+	if (loader.LoadFile("models/noobpot.obj") == false)
+	{
+		fprintf(stderr, "error loading model!\n");
+	}
+	std::vector<float> vertices(loader.LoadedVertices.size() * 3);
+	size_t idx = 0;
+	for (const objl::Vertex& vertex : loader.LoadedVertices)
+	{
+		vertices[idx++] = vertex.Position.X;
+		vertices[idx++] = vertex.Position.Y;
+		vertices[idx++] = vertex.Position.Z;
+	}
+	m_noobPot = new Mesh(vertices.data(), vertices.size()/3);
+
 	// load and compile shaders
 	m_density = new Shader("shaders/density");
 	m_density->use();
@@ -348,7 +365,7 @@ void Vis::display ()
 {
 	float currentFrame;
 	float deltaTime;
-	glm::mat4 projection, view, model;
+	glm::mat4 projection, view, model, transform;
 
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(m_window))
@@ -382,7 +399,7 @@ void Vis::display ()
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// pass projection matrix and camera/view transform to shader
+		// pass projection matrix and camera/view transform to shaders
 		projection = m_cam->GetProjectionMatrix();
 		view = m_cam->GetViewMatrix();
 		model = glm::mat4(1.0f);
@@ -391,6 +408,20 @@ void Vis::display ()
 			renderTestTriangle(m_shader, projection, view, model);
 		#endif
 
+		//m_shader->use();
+		//m_shader->setMat4("projection", projection);
+		//m_shader->setMat4("view", view);
+		for (int idx = 0; idx < 3; ++idx)
+		{
+			transform = glm::translate(model, glm::vec3(idx * 10.0f - 10.0f, -10.0f, 0.0f));
+			if (idx == 1) transform = glm::rotate(transform, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f));
+			else if (idx == 2) transform = glm::rotate(transform, 0.707f, glm::vec3(1.0f, 1.0f, 0.0f));
+			m_shader->setMat4("model", transform);
+			m_shader->setVec3("color", glm::vec3(idx == 0, idx == 1, idx == 2));
+			m_noobPot->draw(GL_TRIANGLES);
+		}
+
+		// render created geometry
 		m_marchingCubes->use();
 		m_marchingCubes->setMat4("projection", projection);
 		m_marchingCubes->setMat4("view", view);

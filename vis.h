@@ -42,7 +42,8 @@ private:
 	// rendering
 	FrameBuffer3D *m_frameBuffer;
 	Mesh *m_meshTriangle;
-	Mesh* m_meshRocks;
+	Mesh *m_meshRocks;
+	Mesh *m_noobPot;
 
 	// lighting
 	const glm::vec3 m_lightPos = glm::vec3(0.5f, 1.0f, 0.3f);

@@ -9,10 +9,10 @@ class Mesh
 {
 private:
 	unsigned int m_VBO, m_VAO;
-	int m_count;
+	size_t m_count;
 
 public:
-	Mesh (float *data, int count)
+	Mesh (float *data, size_t count)
 	{
 		//m_count = count;
 		m_count = 3 * count * sizeof(float);
@@ -57,7 +57,7 @@ public:
 	void draw (GLenum mode) const
 	{
 		glBindVertexArray(m_VAO);
-		glDrawArrays(mode, 0, m_count);
+		glDrawArrays(mode, 0, (GLsizei)m_count);
 	}
 };
 #endif // MESH_H
