@@ -45,6 +45,7 @@ assignments for SPG (shader programming) @FHTechnikumWien
 ### References
 - [Megabyte Softworks Particle System](https://www.mbsoftworks.sk/tutorials/opengl3/23-particle-system/)
 - OpenGL SuperBible
+- [Youtube - theCherno Particle Demo Code Review](https://www.youtube.com/watch?v=kdJhCv7lCD4)
 
 ## Dependencies
 
