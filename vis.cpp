@@ -1,5 +1,10 @@
 #define DEBUG		// used to draw debug triangle, increase point size, ...
 
+#define DRAW_CUBES
+//#define DRAW_QUADS
+//#define DRAW_MESHES
+#define RENDER_LIGHT_SOURCE
+
 #include "camera.h"
 #include "frameBuffer3D.h"
 #include "mesh.h"
@@ -12,29 +17,32 @@
 #include "vis.h"
 
 #ifdef DEBUG
-	#include "glm/gtx/string_cast.hpp" // glm::to_string
+#include "glm/gtx/string_cast.hpp" // glm::to_string
 #endif
 
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
 #include <GLFW/glfw3.h>
 
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+//const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+
 unsigned int VAOTriangle = 0, VBOTriangle;
-void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
+void renderTestTriangle(Shader* shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f))
 {
 	if (VAOTriangle == 0)
 	{
 		float vertices[] =
 		{
-			0, 0, -5,
+			 0,  0, -5,
 			-1, -1, -5,
-			+1, -1, -5
+			 1, -1, -5
 		};
 		glGenVertexArrays(1, &VAOTriangle);
 		glBindVertexArray(VAOTriangle);
 
 		glGenBuffers(1, &VBOTriangle);
 		glBindBuffer(GL_ARRAY_BUFFER, VBOTriangle);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -44,7 +52,7 @@ void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, g
 	shader->setMat4("projection", projection);
 	shader->setMat4("view", view);
 	shader->setMat4("model", model);
-	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+	//shader->setVec3("color", color);
 
 	glBindVertexArray(VAOTriangle);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -55,7 +63,7 @@ void renderTestTriangle (Shader *shader, glm::mat4 projection, glm::mat4 view, g
 }
 
 unsigned int VAOQuad = 0, VBOQuad;
-void renderQuad ()
+void renderQuad()
 {
 	if (VAOQuad == 0)
 	{
@@ -111,7 +119,8 @@ void renderQuad ()
 		bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 		bitangent2 = glm::normalize(bitangent2);
 
-		float quadVertices[] = {
+		float quadVertices[] =
+		{
 			// positions            // normal         // texcoords  // tangent                          // bitangent
 			pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
 			pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
@@ -143,22 +152,146 @@ void renderQuad ()
 	glBindVertexArray(0);
 }
 
-Vis::Vis ()
+unsigned int VAOPlane = 0, VBOPlane;
+void renderPlane()
 {
-	init();
+	if (VAOPlane == 0)
+	{
+		/*float vertices[] =
+		{
+			-15, -15, -15,
+			 15, -15, -15,
+			-15, -15,  15,
+			 15, -15,  15
+		};
+		glGenVertexArrays(1, &VAOPlane);
+		glBindVertexArray(VAOPlane);
 
-	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
-	m_textRenderer->Load("fonts/ocraext.ttf", 36);
+		glGenBuffers(1, &VBOPlane);
+		glBindBuffer(GL_ARRAY_BUFFER, VBOPlane);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);*/
+
+		float planeVertices[] =
+		{
+			// positions            // normals         // texcoords
+			/* 25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+
+			 25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			 25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f*/
+			 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+
+			 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+		};
+		glGenVertexArrays(1, &VAOPlane);
+		glBindVertexArray(VAOPlane);
+
+		glGenBuffers(1, &VBOPlane);
+		glBindBuffer(GL_ARRAY_BUFFER, VBOPlane);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindVertexArray(0);
+	}
+	glBindVertexArray(VAOPlane);
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 }
 
-void Vis::renderText ()
+unsigned int VAOCube = 0, VBOCube;
+void renderCube()
+{
+	// initialize (if necessary)
+	if (VAOCube == 0)
+	{
+		float vertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			// front face
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			// left face
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			// right face
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left
+			// bottom face
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			// top face
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left
+		};
+		glGenVertexArrays(1, &VAOCube);
+		glBindVertexArray(VAOCube);
+
+		glGenBuffers(1, &VBOCube);
+		glBindBuffer(GL_ARRAY_BUFFER, VBOCube);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// render Cube
+	glBindVertexArray(VAOCube);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+
+void Vis::renderText()
 {
 	float xOff = 10.0f;
 	float yOff = .0f;
 	float dY = 20.0f;
 
 	// assure that GL_BLEND is active and polygon mode is set to full
-		// TODO: move this to seperate function
+	// TODO: move this to seperate function
 	bool activateBlend = !glIsEnabled(GL_BLEND);
 	if (activateBlend) glEnable(GL_BLEND);
 
@@ -184,7 +317,54 @@ void Vis::renderText ()
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
 }
 
-int Vis::init ()
+Mesh* noobPot;
+void renderScene(const Shader *shader, int pass)
+{
+	// cubes, quads or teapots
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 transform;
+	float margin = 0.f;
+	#if defined(DRAW_CUBES)
+		margin = 2.f;
+	#elif defined(DRAW_QUADS)
+		margin = 2.5f;
+	#elif defined(DRAW_MESHES)
+		margin = 5.f;
+	#endif
+	for (int idx = 0; idx < 3; ++idx)
+	{
+		transform = glm::translate(model, glm::vec3(idx * margin - margin, 1.0f, 0.0f));
+		if (idx == 1) transform = glm::rotate(transform, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f));
+		else if (idx == 2) transform = glm::rotate(transform, 0.707f, glm::vec3(1.0f, 1.0f, 0.0f));
+		if (idx == 1) transform = glm::scale(transform, glm::vec3(0.5f));
+		shader->setMat4("model", transform);
+		//m_depth->setVec3("color", glm::vec3(idx == 0, idx == 1, idx == 2));
+		#if defined(DRAW_CUBES)
+			renderCube();
+		#elif defined(DRAW_QUADS)
+			renderQuad();
+		#elif defined(DRAW_MESHES)
+			noobPot->draw(GL_TRIANGLES);
+		#endif
+	}
+	// floor
+	if (pass != 0)
+	{
+		//transform = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
+		shader->setMat4("model", model);
+		renderPlane();
+	}
+}
+
+Vis::Vis()
+{
+	init();
+
+	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
+	m_textRenderer->Load("fonts/ocraext.ttf", 36);
+}
+
+int Vis::init()
 {
 	// initialize glfw library
 	if (!glfwInit())
@@ -204,6 +384,34 @@ int Vis::init ()
 	m_texturesBrick = loadTextureBatch("textures/bricks"); // loads bricks.jpg, bricks_normal.jpg and bricks_disp.jpg
 	m_texturesWood = loadTextureBatch("textures/wood");
 	m_texturesCurrent = &m_texturesBrick;
+	m_textureWood = loadTexture("textures/wood.jpg");
+
+	// create depth texture
+	glGenTextures(1, &m_depthMap);
+	//std::cout << "depthMap: " << depthMap << std::endl;
+	//glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	// framebuffer for rendering depthMap
+	glGenFramebuffers(1, &m_depthMapFBO);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// load models
 	objl::Loader loader;
@@ -219,16 +427,19 @@ int Vis::init ()
 		vertices[idx++] = vertex.Position.Y;
 		vertices[idx++] = vertex.Position.Z;
 	}
-	m_noobPot = new Mesh(vertices.data(), vertices.size()/3);
+	m_noobPot = new Mesh(vertices.data(), vertices.size() / 3);
+	// TODO: move everything into Vis class
+	noobPot = m_noobPot;
 
 	// load and compile shaders
+
 	m_density = new Shader("shaders/density");
 	m_density->use();
 	m_density->setFloat("bufferHeight", m_buffer_dim.y);
 
 	m_marchingCubes = new Shader("shaders/marchingCubes");
 	m_marchingCubes->use();
-	m_marchingCubes->setVec3("stepDimension", glm::vec3(1/m_buffer_dim.x, 1/m_buffer_dim.y, 1/m_buffer_dim.z));
+	m_marchingCubes->setVec3("stepDimension", glm::vec3(1 / m_buffer_dim.x, 1 / m_buffer_dim.y, 1 / m_buffer_dim.z));
 
 	m_displacement = new Shader("shaders/displacement");
 	m_displacement->use();
@@ -236,6 +447,13 @@ int Vis::init ()
 	m_displacement->setInt("normalMap", (*m_texturesCurrent)[1] - 1);
 	m_displacement->setInt("depthMap", (*m_texturesCurrent)[2] - 1);
 	m_displacement->setVec3("lightPos", m_lightPos);
+
+	m_depth = new Shader("shaders/depthShader");
+
+	m_lighting = new Shader("shaders/lightingShader");
+	m_lighting->use();
+	m_lighting->setInt("diffuseTexture", 0);
+	m_lighting->setInt("shadowMap", 1);
 
 	m_shader = new Shader("shaders/simpleShader");
 
@@ -276,10 +494,10 @@ int Vis::init ()
 
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND); // needed for TextRenderer
-	//glEnable(GL_MULTISAMPLE);
+	glEnable(GL_BLEND); // needed for TextRenderer?
+	glEnable(GL_MULTISAMPLE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
 
 	// set wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -290,7 +508,7 @@ int Vis::init ()
 	return 0;
 }
 
-void drawErrors ()
+void drawErrors()
 {
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR)
@@ -299,10 +517,10 @@ void drawErrors ()
 	}
 }
 
-int Vis::createWindow ()
+int Vis::createWindow()
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // 4
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 6
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Set all the required options for GLFW
@@ -361,11 +579,13 @@ int Vis::createWindow ()
 	return 0;
 }
 
-void Vis::display ()
+void Vis::display()
 {
 	float currentFrame;
 	float deltaTime;
+	int idx = 0, pass = 0;
 	glm::mat4 projection, view, model, transform;
+	glm::mat4 lightProjection, lightView, lightSpace;
 
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(m_window))
@@ -375,57 +595,118 @@ void Vis::display ()
 		deltaTime = currentFrame - m_lastFrame;
 		m_lastFrame = currentFrame;
 
-		#ifdef DEBUG
-			drawErrors();
-		#endif
+#ifdef DEBUG
+		drawErrors();
+#endif
 
 		processInput(deltaTime);
-
-		// generate terrain by rendering into 3D texture
-		m_frameBuffer->use();
-		m_density->use();
-		m_density->setFloat("yOffset", m_yOffset); // adjust with cursor up, down
-		for (int i = 0; i < m_buffer_dim.y; i++)
-		{
-			// create one layer per step -> each layer is made up of a rectangle of vertices
-			m_density->setInt("layer", i);
-			m_meshTriangle->draw(GL_TRIANGLES);
-
-			m_frameBuffer->setLayer(i);
-		}
-
-		// render 3D texture to screen
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, WIDTH, HEIGHT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// pass projection matrix and camera/view transform to shaders
 		projection = m_cam->GetProjectionMatrix();
 		view = m_cam->GetViewMatrix();
 		model = glm::mat4(1.0f);
 
-		#ifdef DEBUG
-			renderTestTriangle(m_shader, projection, view, model);
+		if (m_rotate)
+		{
+			// change light position over time
+			//m_lightPos.x = sin(currentFrame * m_cam->MovementSpeed * 0.1f) * 10.0f;
+			//m_lightPos.z = cos(currentFrame * m_cam->MovementSpeed * 0.1f) * 10.0f; // rotate around y
+			m_lightPos.x = sin(currentFrame) * 3.0f;
+			m_lightPos.z = cos(currentFrame) * 2.0f;
+			m_lightPos.y = 5.0 + cos(currentFrame) * 1.0f;
+		}
+		else
+		{
+			m_lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+		}
+		//std::cout << "light position: " << glm::to_string(m_lightPos) << std::endl;
+
+		//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, NEAR, FAR);
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		lightView = glm::lookAt(m_lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightSpace = lightProjection * lightView;
+
+		// shadow mapping -> render scene twice, saving depth to shadow map, then actual geometry
+		for (pass = 0; pass < 2; ++pass)
+		{
+			if (pass == 0)
+			{
+				// render scene from light's point of view
+				m_depth->use();
+				m_depth->setMat4("lightSpace", lightSpace);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+				glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, m_textureWood);
+
+				#ifdef DEBUG
+					renderTestTriangle(m_depth, projection, view, model, glm::vec3(0, 1, 0));
+				#endif
+				renderScene(m_depth, pass);
+			}
+			else
+			{
+				// render scene using actual lighting and shadows
+				m_lighting->use();
+				m_lighting->setMat4("projection", projection);
+				m_lighting->setMat4("view", view);
+				// set light uniforms
+				m_lighting->setVec3("viewPos", m_cam->Position);
+				m_lighting->setMat4("lightSpaceMatrix", lightSpace);
+				m_lighting->setVec3("lightPos", m_lightPos);
+
+				glViewport(0, 0, WIDTH, HEIGHT);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, m_textureWood);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, m_depthMap);
+				
+				#ifdef DEBUG
+					renderTestTriangle(m_lighting, projection, view, model, glm::vec3(0, 1, 0));
+				#endif
+				renderScene(m_lighting, pass);
+			}
+		}
+
+		#ifdef RENDER_LIGHT_SOURCE
+			// render light source as quad
+			transform = glm::translate(model, m_lightPos);
+			m_shader->use();
+			m_shader->setMat4("projection", projection);
+			m_shader->setMat4("view", view);
+			m_shader->setVec3("color", glm::vec3(1, 1, 1));
+			m_shader->setMat4("model", transform);
+			renderQuad();
 		#endif
 
-		//m_shader->use();
-		//m_shader->setMat4("projection", projection);
-		//m_shader->setMat4("view", view);
-		for (int idx = 0; idx < 3; ++idx)
+		// generate terrain by rendering into 3D texture
+		m_frameBuffer->use();
+		m_density->use();
+		m_density->setFloat("yOffset", m_yOffset); // adjust with cursor up, down
+		for (idx = 0; idx < m_buffer_dim.y; idx++)
 		{
-			transform = glm::translate(model, glm::vec3(idx * 10.0f - 10.0f, -10.0f, 0.0f));
-			if (idx == 1) transform = glm::rotate(transform, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f));
-			else if (idx == 2) transform = glm::rotate(transform, 0.707f, glm::vec3(1.0f, 1.0f, 0.0f));
-			m_shader->setMat4("model", transform);
-			m_shader->setVec3("color", glm::vec3(idx == 0, idx == 1, idx == 2));
-			m_noobPot->draw(GL_TRIANGLES);
+			// create one layer per step -> each layer is made up of a rectangle of vertices
+			m_density->setInt("layer", idx);
+			m_meshTriangle->draw(GL_TRIANGLES);
+
+			m_frameBuffer->setLayer(idx);
 		}
+
+		glViewport(0, 0, WIDTH, HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// render created geometry
 		m_marchingCubes->use();
 		m_marchingCubes->setMat4("projection", projection);
 		m_marchingCubes->setMat4("view", view);
-		m_marchingCubes->setMat4("model", glm::rotate(model, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f)));
+		transform = glm::translate(model, glm::vec3(0.0f, 50.0f, 0.0f));
+		m_marchingCubes->setMat4("model", glm::rotate(transform, 1.57f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
 		m_meshRocks->draw(GL_POINTS);
 
@@ -433,10 +714,11 @@ void Vis::display ()
 		m_displacement->use();
 		m_displacement->setMat4("projection", projection);
 		m_displacement->setMat4("view", view);
+		transform = glm::translate(model, glm::vec3(-5.0f, 2.0f, 10.0f));
 		if (m_rotate) // rotate the quad to show parallax mapping from multiple directions
-			m_displacement->setMat4("model", glm::rotate(model, glm::radians(currentFrame * -10.0f), glm::vec3(1.0, 0.0, 1.0)));
+			m_displacement->setMat4("model", glm::rotate(transform, glm::radians(currentFrame * -10.0f), glm::vec3(1.0, 0.0, 1.0)));
 		else
-			m_displacement->setMat4("model", model);
+			m_displacement->setMat4("model", transform);
 		m_displacement->setVec3("viewPos", m_cam->Position);
 		m_displacement->setFloat("heightScale", m_heightScale);			// adjust with Q, E
 		m_displacement->setInt("normalSteps", m_normalSteps);			// adjust with Page up, down
@@ -454,6 +736,7 @@ void Vis::display ()
 		// Text HUD
 		renderText();
 
+		// swap buffers and poll IO events
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
 	}
@@ -462,7 +745,7 @@ void Vis::display ()
 	//return EXIT_SUCCESS;
 }
 
-int Vis::exitWithError (std::string code)
+int Vis::exitWithError(std::string code)
 {
 	std::cout << "error: " << code << std::endl;
 	return EXIT_FAILURE;
@@ -470,21 +753,21 @@ int Vis::exitWithError (std::string code)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void Vis::mouse_callback (GLFWwindow* window, double xpos, double ypos)
+void Vis::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	static bool firstMouse = true;
-    if (firstMouse)
-    {
-        m_lastX = (float)xpos;
-        m_lastY = (float)ypos;
-        firstMouse = false;
-    }
+	if (firstMouse)
+	{
+		m_lastX = (float)xpos;
+		m_lastY = (float)ypos;
+		firstMouse = false;
+	}
 
-    float xoffset = (float)(xpos - m_lastX);
-    float yoffset = (float)(m_lastY - ypos); // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)(xpos - m_lastX);
+	float yoffset = (float)(m_lastY - ypos); // reversed since y-coordinates go from bottom to top
 
-    m_lastX = (float)xpos;
-    m_lastY = (float)ypos;
+	m_lastX = (float)xpos;
+	m_lastY = (float)ypos;
 
 	m_cam->ProcessMouseMovement(xoffset, yoffset);
 }
@@ -504,14 +787,14 @@ void Vis::click_callback(GLFWwindow* window, int button, int action, int mods)
 }
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void Vis::scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
+void Vis::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	m_cam->ProcessMouseScroll((float)yoffset);
 }
 
 // The callback function receives the keyboard key, platform-specific scancode, key action and modifier bits.
 // ----------------------------------------------------------------------
-void Vis::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods)
+void Vis::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{

@@ -27,8 +27,12 @@ private:
 	// shaders
 	Shader *m_density;
 	Shader *m_marchingCubes;
-	Shader* m_displacement;
+	Shader *m_displacement;
 	Shader *m_shader;
+	Shader* m_depth;
+	Shader* m_lighting;
+
+	unsigned int m_depthMapFBO;
 
 	bool m_showLines = false;				// toogle between polygon fill and wireframe lines using key 'P'
 	bool m_rotate = false;					// rotates displacement squad if enabled
@@ -46,12 +50,14 @@ private:
 	Mesh *m_noobPot;
 
 	// lighting
-	const glm::vec3 m_lightPos = glm::vec3(0.5f, 1.0f, 0.3f);
+	/*const*/ glm::vec3 m_lightPos = glm::vec3(.1f, 5.0f, .0f);
 
 	// textures
 	std::array<int, 3> m_texturesBrick;
 	std::array<int, 3> m_texturesWood;
 	std::array<int, 3> *m_texturesCurrent;
+	unsigned int m_depthMap = 0;
+	unsigned int m_textureWood = 0;
 
 	// particles
 	ParticleSystem *m_particleSystem;

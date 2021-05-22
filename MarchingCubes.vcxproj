@@ -171,10 +171,16 @@
     <Image Include="textures\bricks_normal.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\debug.fs" />
+    <None Include="shaders\debug.vs" />
     <None Include="shaders\density.fs" />
     <None Include="shaders\density.vs" />
+    <None Include="shaders\depthShader.fs" />
+    <None Include="shaders\depthShader.vs" />
     <None Include="shaders\displacement.fs" />
     <None Include="shaders\displacement.vs" />
+    <None Include="shaders\lightingShader.fs" />
+    <None Include="shaders\lightingShader.vs" />
     <None Include="shaders\marchingCubes.fs" />
     <None Include="shaders\marchingCubes.gs" />
     <None Include="shaders\marchingCubes.vs" />

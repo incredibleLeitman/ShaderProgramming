@@ -10,6 +10,7 @@ unsigned int loadTexture (char const *path)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
+    //std::cout << "path: " << path << " textureID: " << textureID << std::endl;
 
     int width, height, nrComponents;
     unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
