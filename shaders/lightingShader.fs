@@ -67,6 +67,7 @@ float GetVSMShadows(vec4 fragPosLightSpace)
 
     // Variance Shadow Map Calculation
     vec2 moments = texture(shadowMap, projCoords.xy).rg;
+    //moments.y = moment.x * moments.x; // simulate hard shadows
 
     // check whether current frag pos is in shadow
     float p = step(projCoords.z, moments.x);

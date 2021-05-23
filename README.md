@@ -47,6 +47,15 @@ assignments for SPG (shader programming) @FHTechnikumWien
 - OpenGL SuperBible
 - [Youtube - theCherno Particle Demo Code Review](https://www.youtube.com/watch?v=kdJhCv7lCD4)
 
+## Soft Shadows
+
+![Screenshot](shadows.png "shadows")
+
+### References
+
+- [Youtube - thebennybox OpenGL Game Rendering Tutorial: Variance Shadow Mapping Implementation](https://www.youtube.com/watch?v=LGFDifcbsoQ)
+
+
 ## Dependencies
 
 - glad (glad.c need to be in source folder and compiled)
