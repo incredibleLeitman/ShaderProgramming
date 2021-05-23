@@ -8,20 +8,20 @@ in VS_OUT {
     vec4 FragPosLightSpace;
 } fs_in;
 
-uniform sampler2D diffuseTexture;
-uniform sampler2D shadowMap;
+layout (binding = 1) uniform sampler2D diffuseTexture;
+layout (binding = 0) uniform sampler2D shadowMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float GetPCFShadows(vec4 fragPosLightSpace)
 {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // calculate bias (based on depth map resolution and slope)
@@ -50,7 +50,12 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     return shadow;
 }
 
-float get_shadow(vec4 fragPosLightSpace)
+float LinearStep(float low, float high, float value)
+{
+    return clamp((value - low) / (high - low), 0.0, 1.0);
+}
+
+float GetVSMShadows(vec4 fragPosLightSpace)
 {
     // perform perspective divide
     mediump vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -63,18 +68,17 @@ float get_shadow(vec4 fragPosLightSpace)
     // Variance Shadow Map Calculation
     vec2 moments = texture(shadowMap, projCoords.xy).rg;
 
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    mediump float closestDepth = texture(shadowMap, projCoords.xy).r;
-    // get depth of current fragment from light's perspective
-    mediump float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
     float p = step(projCoords.z, moments.x);
     // We divide by this later, so make sure it's not exactly 0
     // It seems like it should always be 0.0, but due to interpolation it's not -- it increases with the deviation!
     float variance = max(moments.y - moments.x * moments.x, 0.00002);
 
-    float d = projCoords.z - moments.x * 1.0; // bias should be "compare", what is that?
+    float d = (projCoords.z - moments.x) * 1.0;
     float p_max = variance / (variance + d * d);
+
+    //float d = (projCoords.z - moments.x) * 10.0;
+    //float p_max = LinearStep(0.2, 1.0, variance / (variance + d*d));
 
     // If this pixel is exactly in the light, p is 1, so make sure we return that in that case
     // min() to make sure that it doesn't get greater than 1.0
@@ -100,12 +104,13 @@ void main()
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;
 
-    // calculate shadow
-    //float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
+    // calculate shadows
+    //float shadow = GetPCFShadows(fs_in.FragPosLightSpace);
     //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
-    float shadow = get_shadow(fs_in.FragPosLightSpace);
-    vec3 lighting = ambient + color + specular + diffuse - shadow * 0.25;
+    float shadow = GetVSMShadows(fs_in.FragPosLightSpace);
+    vec3 lighting = ambient + color + specular + diffuse - (1 - shadow) * 0.25;
+    //vec3 lighting = ambient + color + specular + diffuse - shadow * 0.25;
 
     FragColor = vec4(lighting, 1.0);
 }

@@ -1,7 +1,7 @@
 #define DEBUG		// used to draw debug triangle, increase point size, ...
 
-#define DRAW_CUBES
-//#define DRAW_QUADS
+#define DRAW_QUADS
+//#define DRAW_CUBES
 //#define DRAW_MESHES
 #define RENDER_LIGHT_SOURCE
 #define ENABLE_VSM
@@ -161,13 +161,13 @@ void renderPlane()
 		float planeVertices[] =
 		{
 			// positions            // normals         // texcoords
-			 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			 15.0f, -0.5f,  15.0f,  0.0f, 1.0f, 0.0f,  15.0f,  0.0f,
+			-15.0f, -0.5f,  15.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-15.0f, -0.5f, -15.0f,  0.0f, 1.0f, 0.0f,   0.0f, 15.0f,
 
-			 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-			 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+			 15.0f, -0.5f,  15.0f,  0.0f, 1.0f, 0.0f,  15.0f,  0.0f,
+			-15.0f, -0.5f, -15.0f,  0.0f, 1.0f, 0.0f,   0.0f, 15.0f,
+			 15.0f, -0.5f, -15.0f,  0.0f, 1.0f, 0.0f,  15.0f, 15.0f
 		};
 		glGenVertexArrays(1, &VAOPlane);
 		glBindVertexArray(VAOPlane);
@@ -294,16 +294,16 @@ void Vis::renderText()
 }
 
 Mesh* noobPot;
-void renderScene(const Shader *shader, int pass)
+void renderScene(const Shader* shader, int pass)
 {
 	// cubes, quads or teapots
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 transform;
 	float margin = 0.f;
-	#if defined(DRAW_CUBES)
-		margin = 2.f;
-	#elif defined(DRAW_QUADS)
+	#if defined(DRAW_QUADS)
 		margin = 2.5f;
+	#elif defined(DRAW_CUBES)
+		margin = 2.f;
 	#elif defined(DRAW_MESHES)
 		margin = 5.f;
 	#endif
@@ -326,7 +326,6 @@ void renderScene(const Shader *shader, int pass)
 	// floor
 	if (pass != 0)
 	{
-		//transform = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
 		shader->setMat4("model", model);
 		renderPlane();
 	}
@@ -368,9 +367,7 @@ int Vis::init()
 	glBindTexture(GL_TEXTURE_2D, m_depthMap);
 	#ifdef ENABLE_VSM
 		// R and G with 32 bit floats: stores mean and variance
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL); // black square
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL); // black square
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // error 1286 and black rectangle
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	#else
@@ -391,9 +388,9 @@ int Vis::init()
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_depthMap, 0);
 	#else
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 	#endif
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -477,10 +474,10 @@ int Vis::init()
 
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_CULL_FACE);
 
 	// set wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -598,14 +595,13 @@ void Vis::display()
 			m_lightPos.z = cos(currentFrame) * 2.0f;
 			m_lightPos.y = 4.0 + cos(currentFrame) * 1.0f;
 		}
-		else
-		{
-			m_lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
-		}
 		//std::cout << "light position: " << glm::to_string(m_lightPos) << std::endl;
 
-		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, NEAR, FAR);
-		//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		#ifdef ENABLE_VSM
+			lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, NEAR, FAR);
+		#else
+			lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		#endif
 		lightView = glm::lookAt(m_lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 		lightSpace = lightProjection * lightView;
 
@@ -619,10 +615,10 @@ void Vis::display()
 
 				glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 				glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glClear(GL_COLOR_BUFFER_BIT);
 
-				glActiveTexture(GL_TEXTURE1); // 0 or 1?
-				glBindTexture(GL_TEXTURE_2D, m_depthMap);
+				//glActiveTexture(GL_TEXTURE1);
+				//glBindTexture(GL_TEXTURE_2D, m_depthMap);
 
 				renderScene(m_depth, pass);
 			}
@@ -644,29 +640,21 @@ void Vis::display()
 				glBindTexture(GL_TEXTURE_2D, m_textureWood);
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, m_depthMap);
-				
-				#ifdef DEBUG
-					renderTestTriangle(m_lighting, projection, view, model, glm::vec3(0, 1, 0));
-				#endif
+
 				renderScene(m_lighting, pass);
 			}
 		}
 
-		// swap buffers and poll IO events
-		glfwSwapBuffers(m_window);
-		glfwPollEvents();
-		continue;
-
-		#ifdef RENDER_LIGHT_SOURCE
-			// render light source as quad
-			transform = glm::translate(model, m_lightPos);
-			m_shader->use();
-			m_shader->setMat4("projection", projection);
-			m_shader->setMat4("view", view);
-			m_shader->setVec3("color", glm::vec3(1, 1, 1));
-			m_shader->setMat4("model", transform);
-			renderQuad();
-		#endif
+#ifdef RENDER_LIGHT_SOURCE
+		// render light source as quad
+		transform = glm::translate(model, m_lightPos);
+		m_shader->use();
+		m_shader->setMat4("projection", projection);
+		m_shader->setMat4("view", view);
+		m_shader->setVec3("color", glm::vec3(1, 1, 1));
+		m_shader->setMat4("model", transform);
+		renderQuad();
+#endif
 
 		// generate terrain by rendering into 3D texture
 		m_frameBuffer->use();
@@ -699,9 +687,8 @@ void Vis::display()
 		m_displacement->setMat4("view", view);
 		transform = glm::translate(model, glm::vec3(-5.0f, 2.0f, 10.0f));
 		if (m_rotate) // rotate the quad to show parallax mapping from multiple directions
-			m_displacement->setMat4("model", glm::rotate(transform, glm::radians(currentFrame * -10.0f), glm::vec3(1.0, 0.0, 1.0)));
-		else
-			m_displacement->setMat4("model", transform);
+			m_quadRotation = glm::radians(currentFrame * -10.0f);
+		m_displacement->setMat4("model", glm::rotate(transform, m_quadRotation, glm::vec3(1.0, 0.0, 1.0)));
 		m_displacement->setVec3("viewPos", m_cam->Position);
 		m_displacement->setFloat("heightScale", m_heightScale);			// adjust with Q, E
 		m_displacement->setInt("normalSteps", m_normalSteps);			// adjust with Page up, down

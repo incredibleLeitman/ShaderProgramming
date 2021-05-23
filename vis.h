@@ -36,6 +36,7 @@ private:
 
 	bool m_showLines = false;				// toogle between polygon fill and wireframe lines using key 'P'
 	bool m_rotate = false;					// rotates displacement squad if enabled
+	float m_quadRotation = 0.0f;			// rotation in degrees
 
 	// mouse
 	float m_lastX, m_lastY = 0;				// last stored mouse location
@@ -50,7 +51,7 @@ private:
 	Mesh *m_noobPot;
 
 	// lighting
-	/*const*/ glm::vec3 m_lightPos = glm::vec3(.1f, 5.0f, .0f);
+	/*const*/ glm::vec3 m_lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
 
 	// textures
 	std::array<int, 3> m_texturesBrick;

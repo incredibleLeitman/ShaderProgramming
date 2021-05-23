@@ -24,10 +24,12 @@ public:
             gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
             gShaderFile.open(base + ".gs");
             gShaderFile.close();
+            //std::cout << "compiling vertex, fragment and geometry shader for " << name << std::endl;
             init((base + ".vs").c_str(), (base + ".fs").c_str(), (base + ".gs").c_str());
         }
         catch (std::ifstream::failure) // no gs provided or available
         {
+            //std::cout << "compiling vertex and fragment shader for " << name << std::endl;
             init((base + ".vs").c_str(), (base + ".fs").c_str());
         }
     }
