@@ -171,8 +171,6 @@
     <Image Include="textures\bricks_normal.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\debug.fs" />
-    <None Include="shaders\debug.vs" />
     <None Include="shaders\density.fs" />
     <None Include="shaders\density.vs" />
     <None Include="shaders\depthShader.fs" />

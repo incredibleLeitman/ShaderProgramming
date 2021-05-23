@@ -4,6 +4,7 @@
 //#define DRAW_QUADS
 //#define DRAW_MESHES
 #define RENDER_LIGHT_SOURCE
+#define ENABLE_VSM
 
 #include "camera.h"
 #include "frameBuffer3D.h"
@@ -23,8 +24,8 @@
 // #define GLFW_INCLUDE_NONE before including GLFW, or include glad bfore including glfw.
 #include <GLFW/glfw3.h>
 
-const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-//const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+const unsigned int SHADOW_WIDTH = 2048;
+const unsigned int SHADOW_HEIGHT = 2048;
 
 unsigned int VAOTriangle = 0, VBOTriangle;
 void renderTestTriangle(Shader* shader, glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f))
@@ -157,33 +158,9 @@ void renderPlane()
 {
 	if (VAOPlane == 0)
 	{
-		/*float vertices[] =
-		{
-			-15, -15, -15,
-			 15, -15, -15,
-			-15, -15,  15,
-			 15, -15,  15
-		};
-		glGenVertexArrays(1, &VAOPlane);
-		glBindVertexArray(VAOPlane);
-
-		glGenBuffers(1, &VBOPlane);
-		glBindBuffer(GL_ARRAY_BUFFER, VBOPlane);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);*/
-
 		float planeVertices[] =
 		{
 			// positions            // normals         // texcoords
-			/* 25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			-25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-
-			 25.0f, -15.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-			 25.0f, -15.0f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f*/
 			 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
 			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
 			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
@@ -207,7 +184,6 @@ void renderPlane()
 		glBindVertexArray(0);
 	}
 	glBindVertexArray(VAOPlane);
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
@@ -389,14 +365,19 @@ int Vis::init()
 	// create depth texture
 	glGenTextures(1, &m_depthMap);
 	//std::cout << "depthMap: " << depthMap << std::endl;
-	//glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_depthMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	#ifdef ENABLE_VSM
+		// R and G with 32 bit floats: stores mean and variance
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL); // black square
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL); // black square
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // error 1286 and black rectangle
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	#else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	#endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -406,8 +387,11 @@ int Vis::init()
 	glGenFramebuffers(1, &m_depthMapFBO);
 	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_depthMap, 0);
+	#ifdef ENABLE_VSM
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_depthMap, 0);
+	#else
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
+	#endif
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 
@@ -432,7 +416,6 @@ int Vis::init()
 	noobPot = m_noobPot;
 
 	// load and compile shaders
-
 	m_density = new Shader("shaders/density");
 	m_density->use();
 	m_density->setFloat("bufferHeight", m_buffer_dim.y);
@@ -494,7 +477,7 @@ int Vis::init()
 
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND); // needed for TextRenderer?
+	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
@@ -613,7 +596,7 @@ void Vis::display()
 			//m_lightPos.z = cos(currentFrame * m_cam->MovementSpeed * 0.1f) * 10.0f; // rotate around y
 			m_lightPos.x = sin(currentFrame) * 3.0f;
 			m_lightPos.z = cos(currentFrame) * 2.0f;
-			m_lightPos.y = 5.0 + cos(currentFrame) * 1.0f;
+			m_lightPos.y = 4.0 + cos(currentFrame) * 1.0f;
 		}
 		else
 		{
@@ -621,35 +604,30 @@ void Vis::display()
 		}
 		//std::cout << "light position: " << glm::to_string(m_lightPos) << std::endl;
 
-		//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, NEAR, FAR);
-		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, NEAR, FAR);
+		//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 		lightView = glm::lookAt(m_lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 		lightSpace = lightProjection * lightView;
 
 		// shadow mapping -> render scene twice, saving depth to shadow map, then actual geometry
 		for (pass = 0; pass < 2; ++pass)
 		{
-			if (pass == 0)
+			if (pass == 0) // render scene from light's point of view
 			{
-				// render scene from light's point of view
 				m_depth->use();
 				m_depth->setMat4("lightSpace", lightSpace);
 
-				glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
 				glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+				glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, m_textureWood);
+				glActiveTexture(GL_TEXTURE1); // 0 or 1?
+				glBindTexture(GL_TEXTURE_2D, m_depthMap);
 
-				#ifdef DEBUG
-					renderTestTriangle(m_depth, projection, view, model, glm::vec3(0, 1, 0));
-				#endif
 				renderScene(m_depth, pass);
 			}
-			else
+			else // render scene using actual lighting and shadows
 			{
-				// render scene using actual lighting and shadows
 				m_lighting->use();
 				m_lighting->setMat4("projection", projection);
 				m_lighting->setMat4("view", view);
@@ -673,6 +651,11 @@ void Vis::display()
 				renderScene(m_lighting, pass);
 			}
 		}
+
+		// swap buffers and poll IO events
+		glfwSwapBuffers(m_window);
+		glfwPollEvents();
+		continue;
 
 		#ifdef RENDER_LIGHT_SOURCE
 			// render light source as quad

@@ -126,11 +126,5 @@
     <None Include="shaders\lightingShader.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\debug.fs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\debug.vs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>

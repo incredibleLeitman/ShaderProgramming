@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 out vec4 FragColor;
 
 in VS_OUT {
@@ -37,26 +37,57 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
-        }    
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+        }
     }
     shadow /= 9.0;
-    
+
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
         shadow = 0.0;
-        
+
     return shadow;
 }
 
+float get_shadow(vec4 fragPosLightSpace)
+{
+    // perform perspective divide
+    mediump vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // If we're outside of [0.0, 1.0] in the coordinates, return 0
+    if (projCoords.x < 0.0 || projCoords.y < 0.0 || projCoords.x > 1.0 || projCoords.y > 1.0) return 0.0;
+
+    // Variance Shadow Map Calculation
+    vec2 moments = texture(shadowMap, projCoords.xy).rg;
+
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    mediump float closestDepth = texture(shadowMap, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    mediump float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float p = step(projCoords.z, moments.x);
+    // We divide by this later, so make sure it's not exactly 0
+    // It seems like it should always be 0.0, but due to interpolation it's not -- it increases with the deviation!
+    float variance = max(moments.y - moments.x * moments.x, 0.00002);
+
+    float d = projCoords.z - moments.x * 1.0; // bias should be "compare", what is that?
+    float p_max = variance / (variance + d * d);
+
+    // If this pixel is exactly in the light, p is 1, so make sure we return that in that case
+    // min() to make sure that it doesn't get greater than 1.0
+    return 1.0 - min(max(p, p_max), 1.0);
+}
+
 void main()
-{           
+{
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
     vec3 normal = normalize(fs_in.Normal);
     vec3 lightColor = vec3(0.3);
     // ambient
-    vec3 ambient = 0.3 * color;
+    vec3 ambient = 0.1 * color;
     // diffuse
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(lightDir, normal), 0.0);
@@ -65,12 +96,16 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = 0.0;
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-    vec3 specular = spec * lightColor;    
+    vec3 specular = spec * lightColor;
+
     // calculate shadow
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);                      
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
-    
+    //float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
+    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+
+    float shadow = get_shadow(fs_in.FragPosLightSpace);
+    vec3 lighting = ambient + color + specular + diffuse - shadow * 0.25;
+
     FragColor = vec4(lighting, 1.0);
 }
