@@ -62,8 +62,8 @@ assignments for SPG (shader programming) @FHTechnikumWien
 
 ### References
 
-- [Modern OpenGL Tutorials - Basic Tesselation] (https://ogldev.org/www/tutorial30/tutorial30.html)
-- [little Grasshopper - Triangle Tessellation with OpenGL 4.0] (https://prideout.net/blog/old/blog/index.html@p=48.html)
+- [Modern OpenGL Tutorials - Basic Tesselation](https://ogldev.org/www/tutorial30/tutorial30.html)
+- [little Grasshopper - Triangle Tessellation with OpenGL 4.0](https://prideout.net/blog/old/blog/index.html@p=48.html)
 
 
 ## Dependencies
