@@ -126,5 +126,20 @@
     <None Include="shaders\lightingShader.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\terrain.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.tcs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.tes">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.gs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -187,6 +187,11 @@
     <None Include="shaders\particles.vs" />
     <None Include="shaders\simpleShader.fs" />
     <None Include="shaders\simpleShader.vs" />
+    <None Include="shaders\terrain.fs" />
+    <None Include="shaders\terrain.gs" />
+    <None Include="shaders\terrain.tcs" />
+    <None Include="shaders\terrain.tes" />
+    <None Include="shaders\terrain.vs" />
     <None Include="shaders\text_2d.fs" />
     <None Include="shaders\text_2d.vs" />
   </ItemGroup>

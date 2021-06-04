@@ -260,7 +260,16 @@ void renderCube()
 	glBindVertexArray(0);
 }
 
-void Vis::renderText()
+void drawErrors()
+{
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR)
+	{
+		std::cerr << err << std::endl;
+	}
+}
+
+void Vis::renderText(float delta)
 {
 	float xOff = 10.0f;
 	float yOff = .0f;
@@ -274,8 +283,11 @@ void Vis::renderText()
 	// set wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	xOff = 10.0f;
 	yOff = .0f;
+	m_textRenderer->RenderText(std::to_string(1.0f/delta), WIDTH - 180.0f, yOff += dY, 0.8f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	xOff = 10.0f;
+	yOff = 25.0f;
 	m_textRenderer->RenderText("W, A, S, D        move", xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("Cursor Up, Down   yOffset: " + floatToString(m_yOffset), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("Q, E              height scale: " + floatToString(m_heightScale), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
@@ -283,11 +295,12 @@ void Vis::renderText()
 	m_textRenderer->RenderText("+, -              refinement steps:   " + std::to_string(m_refinementSteps), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 
 	xOff = WIDTH - 460.0f;
-	yOff = .0f;
+	yOff = 25.0f;
 	m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-	m_textRenderer->RenderText("NUM 1, 2          texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("1, 2              texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("Space, Backspace  update rate:   " + std::to_string((int)m_particleSystem->updateRate), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("NUM 2, 8          tes. factor:   " + std::to_string((int)m_tesFac), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 
 	if (activateBlend) glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -337,6 +350,10 @@ Vis::Vis()
 
 	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
 	m_textRenderer->Load("fonts/ocraext.ttf", 36);
+
+	GLint MaxPatchVertices = 0;
+	glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
+	printf("Max supported patch vertices %d\n", MaxPatchVertices); // 32
 }
 
 int Vis::init()
@@ -435,6 +452,8 @@ int Vis::init()
 	m_lighting->setInt("diffuseTexture", 0);
 	m_lighting->setInt("shadowMap", 1);
 
+	m_terrain = new Shader("shaders/terrain");
+
 	m_shader = new Shader("shaders/simpleShader");
 
 	// init camera to be able to move around the scene
@@ -486,15 +505,6 @@ int Vis::init()
 	glClearColor(.0f, .0f, .0f, 1.0f);
 
 	return 0;
-}
-
-void drawErrors()
-{
-	GLenum err;
-	while ((err = glGetError()) != GL_NO_ERROR)
-	{
-		std::cerr << err << std::endl;
-	}
 }
 
 int Vis::createWindow()
@@ -703,8 +713,22 @@ void Vis::display()
 		// particle system
 		m_particleSystem->renderParticles(deltaTime, projection, view, m_cam);
 
+		// fun with tesselation
+		m_terrain->use();
+		m_terrain->setMat4("projection", projection);
+		m_terrain->setMat4("view", view);
+		transform = glm::translate(model, glm::vec3(0.0f, 7.0f, -12.0f));
+		m_terrain->setMat4("model", glm::scale(transform, glm::vec3(5)));
+		m_terrain->setFloat("tessellation_factor", m_tesFac);
+		// like renderQuad() but with patches
+		glBindVertexArray(VAOQuad);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glPatchParameteri(GL_PATCH_VERTICES, 3);
+		glDrawArrays(GL_PATCHES, 0, 6);
+		glBindVertexArray(0);
+
 		// Text HUD
-		renderText();
+		renderText(deltaTime);
 
 		// swap buffers and poll IO events
 		glfwSwapBuffers(m_window);
@@ -777,9 +801,9 @@ void Vis::key_callback(GLFWwindow* window, int key, int scancode, int action, in
 		{
 			std::cout << "rotation " << ((m_rotate ^= true) ? "enabled" : "disabled") << std::endl;
 		}
-		else if (key == GLFW_KEY_KP_1 || key == GLFW_KEY_KP_2) // swaps current textures for displacement tile
+		else if (key == GLFW_KEY_1 || key == GLFW_KEY_2) // swaps current textures for displacement tile
 		{
-			m_texturesCurrent = (key == GLFW_KEY_KP_1) ? &m_texturesBrick : &m_texturesWood;
+			m_texturesCurrent = (key == GLFW_KEY_1) ? &m_texturesBrick : &m_texturesWood;
 
 			m_displacement->use();
 			m_displacement->setInt("diffuseMap", (*m_texturesCurrent)[0] - 1);
@@ -828,4 +852,8 @@ void Vis::processInput(float delta)
 		++m_refinementSteps;
 	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
 		m_refinementSteps = std::max(--m_refinementSteps, 1);
+	if (glfwGetKey(m_window, GLFW_KEY_KP_8) == GLFW_PRESS)
+		m_tesFac += 1.0f;
+	if (glfwGetKey(m_window, GLFW_KEY_KP_2) == GLFW_PRESS)
+		m_tesFac = std::max(m_tesFac - 1.0f, 1.0f);
 }

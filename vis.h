@@ -31,6 +31,7 @@ private:
 	Shader *m_shader;
 	Shader* m_depth;
 	Shader* m_lighting;
+	Shader* m_terrain;
 
 	unsigned int m_depthMapFBO;
 
@@ -85,8 +86,11 @@ private:
 	int m_normalSteps = 10;
 	int m_refinementSteps = 5;
 
+	// tesselation
+	float m_tesFac = 1.0;
+
 	// text rendering
-	void renderText();
+	void renderText(float delta);
 
 public:
 	Vis ();

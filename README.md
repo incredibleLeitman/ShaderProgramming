@@ -15,6 +15,7 @@ assignments for SPG (shader programming) @FHTechnikumWien
 | W, A, S, D      | controls to move the camera, look around with mouse |
 | space, backspace | change particle update rate |
 | mouse button | spawn a new particle emitter |
+| KP 2, 8 | in-/decrease tesselation factor |
 
 ## MarchingCubes
 
@@ -54,6 +55,15 @@ assignments for SPG (shader programming) @FHTechnikumWien
 ### References
 
 - [Youtube - thebennybox OpenGL Game Rendering Tutorial: Variance Shadow Mapping Implementation](https://www.youtube.com/watch?v=LGFDifcbsoQ)
+
+## Tesselation
+
+![Screenshot](tesselation.png "tesselation")
+
+### References
+
+- [Modern OpenGL Tutorials - Basic Tesselation] (https://ogldev.org/www/tutorial30/tutorial30.html)
+- [little Grasshopper - Triangle Tessellation with OpenGL 4.0] (https://prideout.net/blog/old/blog/index.html@p=48.html)
 
 
 ## Dependencies

@@ -15,110 +15,59 @@ class Shader
 public:
     unsigned int ID;
 
-    Shader (const char* name)
+    Shader (const char* name) : ID(glCreateProgram())
     {
+        unsigned int shader_id = 0;
         std::string base = name;
-        try
+        std::string shader = base + ".vs";
+        if (file_exists(shader.c_str()))
         {
-            std::ifstream gShaderFile;
-            gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-            gShaderFile.open(base + ".gs");
-            gShaderFile.close();
-            //std::cout << "compiling vertex, fragment and geometry shader for " << name << std::endl;
-            init((base + ".vs").c_str(), (base + ".fs").c_str(), (base + ".gs").c_str());
+            shader_id = load_shader(shader.c_str(), GL_VERTEX_SHADER);
+            //std::cout << "attaching vertex shader " << shader << " with id " << shader_id << std::endl;
+            glAttachShader(ID, shader_id);
+            glDeleteShader(shader_id);
         }
-        catch (std::ifstream::failure) // no gs provided or available
-        {
-            //std::cout << "compiling vertex and fragment shader for " << name << std::endl;
-            init((base + ".vs").c_str(), (base + ".fs").c_str());
-        }
-    }
 
-    Shader (const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
-    {
-        init(vertexPath, fragmentPath, geometryPath);
-    }
+        shader = base + ".fs";
+        if (file_exists(shader.c_str()))
+        {
+            shader_id = load_shader(shader.c_str(), GL_FRAGMENT_SHADER);
+            //std::cout << "attaching fragment shader " << shader << " with id " << shader_id << std::endl;
+            glAttachShader(ID, shader_id);
+            glDeleteShader(shader_id);
+        }
 
-    void init (const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
-    {
-        // 1. retrieve the vertex/fragment source code from filePath
-        std::string vertexCode;
-        std::string fragmentCode;
-        std::string geometryCode;
-        std::ifstream vShaderFile;
-        std::ifstream fShaderFile;
-        std::ifstream gShaderFile;
-        // ensure ifstream objects can throw exceptions:
-        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        try
+        shader = base + ".gs";
+        if (file_exists(shader.c_str()))
         {
-            // open files
-            vShaderFile.open(vertexPath);
-            fShaderFile.open(fragmentPath);
-            std::stringstream vShaderStream, fShaderStream;
-            // read file's buffer contents into streams
-            vShaderStream << vShaderFile.rdbuf();
-            fShaderStream << fShaderFile.rdbuf();
-            // close file handlers
-            vShaderFile.close();
-            fShaderFile.close();
-            // convert stream into string
-            vertexCode = vShaderStream.str();
-            fragmentCode = fShaderStream.str();
-            // if geometry shader path is present, also load a geometry shader
-            if (geometryPath != nullptr)
-            {
-                gShaderFile.open(geometryPath);
-                std::stringstream gShaderStream;
-                gShaderStream << gShaderFile.rdbuf();
-                gShaderFile.close();
-                geometryCode = gShaderStream.str();
-            }
+            shader_id = load_shader(shader.c_str(), GL_GEOMETRY_SHADER);
+            //std::cout << "attaching geometry shader " << shader << " with id " << shader_id << std::endl;
+            glAttachShader(ID, shader_id);
+            glDeleteShader(shader_id);
         }
-        catch (std::ifstream::failure & e)
+
+        shader = base + ".tcs";
+        if (file_exists(shader.c_str()))
         {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+            shader_id = load_shader(shader.c_str(), GL_TESS_CONTROL_SHADER);
+            //std::cout << "attaching tess control shader " << shader << " with id " << shader_id << std::endl;
+            glAttachShader(ID, shader_id);
+            glDeleteShader(shader_id);
         }
-        const char* vShaderCode = vertexCode.c_str();
-        const char* fShaderCode = fragmentCode.c_str();
-        // 2. compile shaders
-        unsigned int vertex, fragment;
-        // vertex shader
-        vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vShaderCode, NULL);
-        glCompileShader(vertex);
-        checkCompileErrors(vertex, "VERTEX");
-        // fragment Shader
-        fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fShaderCode, NULL);
-        glCompileShader(fragment);
-        checkCompileErrors(fragment, "FRAGMENT");
-        // if geometry shader is given, compile geometry shader
-        unsigned int geometry;
-        if (geometryPath != nullptr)
+
+        shader = base + ".tes";
+        if (file_exists(shader.c_str()))
         {
-            const char* gShaderCode = geometryCode.c_str();
-            geometry = glCreateShader(GL_GEOMETRY_SHADER);
-            glShaderSource(geometry, 1, &gShaderCode, NULL);
-            glCompileShader(geometry);
-            checkCompileErrors(geometry, "GEOMETRY");
+            shader_id = load_shader(shader.c_str(), GL_TESS_EVALUATION_SHADER);
+            //std::cout << "attaching tess eval shader " << shader << " with id " << shader_id << std::endl;
+            glAttachShader(ID, shader_id);
+            glDeleteShader(shader_id);
         }
-        // shader Program
-        ID = glCreateProgram();
-        glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
-        if (geometryPath != nullptr)
-            glAttachShader(ID, geometry);
+
         glLinkProgram(ID);
         checkCompileErrors(ID, "PROGRAM");
-        // delete the shaders as they're linked into our program now and no longer necessery
-        glDeleteShader(vertex);
-        glDeleteShader(fragment);
-        if (geometryPath != nullptr)
-            glDeleteShader(geometry);
     }
+
     // activate the shader
     // ------------------------------------------------------------------------
     void use()
@@ -220,6 +169,33 @@ private:
                 std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
             }
         }
+    }
+
+    unsigned int load_shader(const char *path, GLuint type)
+    {
+        std::string code;
+        std::ifstream file;
+
+        file.open(path);
+        std::stringstream shader_stream;
+        shader_stream << file.rdbuf();
+        file.close();
+
+        code = shader_stream.str();
+        const char* code_charptr = code.c_str();
+
+        unsigned int shader = glCreateShader(type);
+        glShaderSource(shader, 1, &code_charptr, NULL);
+        glCompileShader(shader);
+        checkCompileErrors(shader, "GL_SHADERTYPE_" + std::to_string(type));
+
+        return shader;
+    }
+
+    inline bool file_exists (const char *name)
+    {
+        struct stat buffer;
+        return (stat(name, &buffer) == 0);
     }
 };
 #endif // SHADER_H
