@@ -603,7 +603,7 @@ void Vis::display()
 			//m_lightPos.z = cos(currentFrame * m_cam->MovementSpeed * 0.1f) * 10.0f; // rotate around y
 			m_lightPos.x = sin(currentFrame) * 3.0f;
 			m_lightPos.z = cos(currentFrame) * 2.0f;
-			m_lightPos.y = 4.0 + cos(currentFrame) * 1.0f;
+			m_lightPos.y = 4.0f + cos(currentFrame) * 1.0f;
 		}
 		//std::cout << "light position: " << glm::to_string(m_lightPos) << std::endl;
 
@@ -773,9 +773,7 @@ void Vis::click_callback(GLFWwindow* window, int button, int action, int mods)
 	// shoots raycast to spawn particle emitter
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		// TODO: calc depending on cam front dir
-		//glm::vec3 pos += -m_cam->Front * glm::vec3(0, 0, 10);
-		glm::vec3 pos = m_cam->Position + glm::vec3(0, 0, 10);
+		glm::vec3 pos = m_cam->Position + glm::normalize(m_cam->Front) * 10.0f;
 		m_particleSystem->createEmitter(pos);
 	}
 }
