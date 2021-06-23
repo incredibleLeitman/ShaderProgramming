@@ -86,6 +86,8 @@ float GetVSMShadows(vec4 fragPosLightSpace)
     return 1.0 - min(max(p, p_max), 1.0);
 }
 
+// TODO: CSM, ESM, PCSS, ...
+
 void main()
 {
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;

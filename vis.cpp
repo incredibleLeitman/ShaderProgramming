@@ -299,8 +299,8 @@ void Vis::renderText(float delta)
 	m_textRenderer->RenderText("R                 auto rotate:   " + std::string(m_rotate ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("P                 wireframe:     " + std::string(m_showLines ? "on" : "off"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 	m_textRenderer->RenderText("1, 2              texture:       " + std::string(m_texturesCurrent == &m_texturesBrick ? "brick" : "wood"), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-	m_textRenderer->RenderText("Space, Backspace  update rate:   " + std::to_string((int)m_particleSystem->updateRate), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
-	m_textRenderer->RenderText("NUM 2, 8          tes. factor:   " + std::to_string((int)m_tesFac), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("Space, Backspace  update rate:   " + floatToString(m_particleSystem->updateRate), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
+	m_textRenderer->RenderText("NUM 2, 8          tes. factor:   " + floatToString(m_tesFac), xOff, yOff += dY, 0.5f, glm::vec3(1.0f));
 
 	if (activateBlend) glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, (m_showLines) ? GL_LINE : GL_FILL);
@@ -336,6 +336,7 @@ void renderScene(const Shader* shader, int pass)
 			noobPot->draw(GL_TRIANGLES);
 		#endif
 	}
+
 	// floor
 	if (pass != 0)
 	{
@@ -351,9 +352,11 @@ Vis::Vis()
 	m_textRenderer = new TextRenderer(WIDTH, HEIGHT);
 	m_textRenderer->Load("fonts/ocraext.ttf", 36);
 
-	GLint MaxPatchVertices = 0;
-	glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
-	printf("Max supported patch vertices %d\n", MaxPatchVertices); // 32
+	GLint val = 0;
+	glGetIntegerv(GL_MAX_PATCH_VERTICES, &val);
+	printf("Max supported patch vertices: %d\n", val); // 32
+	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &val);
+	printf("Max supported tesselation level: %d\n", val); // 64
 }
 
 int Vis::init()
@@ -408,7 +411,6 @@ int Vis::init()
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 	#endif
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// load models
@@ -672,11 +674,11 @@ void Vis::display()
 		m_density->setFloat("yOffset", m_yOffset); // adjust with cursor up, down
 		for (idx = 0; idx < m_buffer_dim.y; idx++)
 		{
+			m_frameBuffer->setLayer(idx);
+
 			// create one layer per step -> each layer is made up of a rectangle of vertices
 			m_density->setInt("layer", idx);
 			m_meshTriangle->draw(GL_TRIANGLES);
-
-			m_frameBuffer->setLayer(idx);
 		}
 
 		glViewport(0, 0, WIDTH, HEIGHT);
@@ -719,7 +721,7 @@ void Vis::display()
 		m_terrain->setMat4("view", view);
 		transform = glm::translate(model, glm::vec3(0.0f, 7.0f, -12.0f));
 		m_terrain->setMat4("model", glm::scale(transform, glm::vec3(5)));
-		m_terrain->setFloat("tessellation_factor", m_tesFac);
+		m_terrain->setFloat("tessellation_factor", m_tesFac);		// adjust with 8, 2
 		// like renderQuad() but with patches
 		glBindVertexArray(VAOQuad);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -851,7 +853,7 @@ void Vis::processInput(float delta)
 	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
 		m_refinementSteps = std::max(--m_refinementSteps, 1);
 	if (glfwGetKey(m_window, GLFW_KEY_KP_8) == GLFW_PRESS)
-		m_tesFac += 1.0f;
+		m_tesFac += 0.1f;
 	if (glfwGetKey(m_window, GLFW_KEY_KP_2) == GLFW_PRESS)
-		m_tesFac = std::max(m_tesFac - 1.0f, 1.0f);
+		m_tesFac = std::max(m_tesFac - 0.1f, 1.0f);
 }

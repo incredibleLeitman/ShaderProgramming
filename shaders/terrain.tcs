@@ -1,17 +1,20 @@
 #version 430 core
 
-layout (vertices = 3) out;
+layout (vertices = 3) out; // number of control points in the output patch
 
-uniform float tessellation_factor;
+uniform float tessellation_factor; // *level
 
 void main()
 {
-    if (gl_InvocationID == 0)
-    {
-        gl_TessLevelInner[0] = tessellation_factor;
-        gl_TessLevelOuter[0] = tessellation_factor;
-        gl_TessLevelOuter[1] = tessellation_factor;
-        gl_TessLevelOuter[2] = tessellation_factor;
-    }
+    // TODO: could calculate distance from camera to cp for dynamic lod
+    
+    // tesselation level: inner 0 - 1: top/bottom, left/rigth
+    //                    outer 0 - 3: left, bottom, right, top
+    gl_TessLevelInner[0] = tessellation_factor;
+    gl_TessLevelOuter[0] = tessellation_factor;
+    gl_TessLevelOuter[1] = tessellation_factor;
+    gl_TessLevelOuter[2] = tessellation_factor;
+    gl_TessLevelOuter[3] = tessellation_factor;
+
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 }

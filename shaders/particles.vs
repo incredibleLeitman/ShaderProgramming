@@ -35,7 +35,7 @@ float randomRange (float min, float max)
     return min + random(vec2(gl_VertexID, gl_VertexID)) * (max - min);
 }
 
-vec3 calculatParticleVelocity ()
+vec3 calculateParticleVelocity ()
 {
     float xRand = random(vec2(1, gl_VertexID));
     float yRand = random(vec2(2, gl_VertexID));
@@ -59,7 +59,7 @@ void main ()
     offsetTime = mod(offsetTime, max(maxParticles / particlesPerSecond, lifeTime));
     gAlive = float(offsetTime < lifeTime && offsetTime != 0);
 
-    vec3 velocity = calculatParticleVelocity();
+    vec3 velocity = calculateParticleVelocity();
     vec3 pos = velocity * offsetTime;
 
     int typeIndex = int(randomRange(0, 3));
