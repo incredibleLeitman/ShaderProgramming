@@ -138,8 +138,5 @@
     <None Include="shaders\terrain.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\terrain.gs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>
