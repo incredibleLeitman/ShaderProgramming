@@ -8,7 +8,7 @@ void main()
 {
     // TODO: could calculate distance from camera to cp for dynamic lod
     
-    // tesselation level: inner 0 - 1: top/bottom, left/rigth
+    // tesselation level: inner 0 - 1: top/bottom, left/right
     //                    outer 0 - 3: left, bottom, right, top
     gl_TessLevelInner[0] = tessellation_factor;
     gl_TessLevelOuter[0] = tessellation_factor;

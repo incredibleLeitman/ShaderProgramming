@@ -78,6 +78,7 @@ float GetVSMShadows(vec4 fragPosLightSpace)
     float d = (projCoords.z - moments.x) * 1.0;
     float p_max = variance / (variance + d * d);
 
+    // reduce light bleeding by using bias
     //float d = (projCoords.z - moments.x) * 10.0;
     //float p_max = LinearStep(0.2, 1.0, variance / (variance + d*d));
 

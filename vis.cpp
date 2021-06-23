@@ -668,7 +668,7 @@ void Vis::display()
 		renderQuad();
 #endif
 
-		// generate terrain by rendering into 3D texture
+		// generate geometry by rendering into 3D texture
 		m_frameBuffer->use();
 		m_density->use();
 		m_density->setFloat("yOffset", m_yOffset); // adjust with cursor up, down
